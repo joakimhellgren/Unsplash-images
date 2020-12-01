@@ -44,7 +44,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         case paginate
     }
     
-    // MARK: diffable data source
+     // MARK: diffable data source
     private lazy var diffableDataSource: UICollectionViewDiffableDataSource<Int, Result> = {
         let dataSource = UICollectionViewDiffableDataSource<Int, Result>(collectionView: collectionView) { collectionView, indexPath, item in
             
@@ -72,23 +72,11 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         return dataSource
     }()
     
-    /*
-     private func createLayout() -> UICollectionViewLayout {
-     let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(0.25))
-     let item = NSCollectionLayoutItem(layoutSize: itemSize)
-     item.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 16, bottom: 8, trailing: 16)
-     let layoutSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalWidth(1.0))
-     let group = NSCollectionLayoutGroup.vertical(layoutSize: layoutSize, subitems: [item])
-     let section = NSCollectionLayoutSection(group: group)
-     let layout = UICollectionViewCompositionalLayout(section: section)
-     return layout
-     }
-     */
-    
-    // MARK: Collection view setup
+      
+     // MARK: Collection view setup
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
-        
+       
         layout.itemSize = CGSize(width: 200, height: 200)
         layout.footerReferenceSize = CGSize(width: 0, height: 60)
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -101,11 +89,11 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     }()
     
     
-    
+
     // update the collection view cells / footer with our requested data
     private func update(with items: [Result]) {
         // React.js DOM rendering(?).
-        // compares new data with current data and updates if any changes were made.
+        // compares new data with current data and updates cells/view if any changes were made.
         var snapshot = NSDiffableDataSourceSnapshot<Int, Result>()
         snapshot.appendSections([0])
         snapshot.appendItems(images, toSection: 0)
@@ -130,7 +118,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
             }
             footer.fill(with: statusText, loading: loadingData)
         }
-        
         
     }
     
@@ -166,18 +153,17 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         self.navigationController?.pushViewController(view, animated: true)
     }
     
+
     
-    
-    
+
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        // When performing a new search
-        // we reset our data as so:
+        // When performing a new search we reset our data
         images = []
         statusLabelText = .loading
         fetchState = .request
         page = 1
         update(with: self.images)
-        // then we request a new search for the first page
+        // request a new search for the first page
         // with our users input as the secondary query for our api
         if let input = searchController.searchBar.text {
             title = "Searching for: \(input)"
@@ -189,60 +175,64 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     // performs API requests based on the type request we have specified.
     // Initial search requests always trigger the case .request.
-    // Pagination always trigger the case .paginate
+    // Pagination (loading more data after our inital request) always trigger the case .paginate
     func fetchData(searchTerm: String, page: Int) {
         self.prefetchState = .fetching
         self.searchInput = searchTerm
-        switch fetchState {
-        case .request:
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                self.dataManager.fetch(page: page, searchTerm: searchTerm) { images in
-                    if images.results.count != 0 {
-                        self.statusLabelText = .loading
-                        self.images.append(contentsOf: images.results)
-                        self.totalCount = images.total
-                        self.currentCount = images.results.count
-                        self.update(with: self.images)
-                        self.page += 1
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            self.prefetchState = .idle
+            switch fetchState {
+            case .request:
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    self.dataManager.fetch(page: page, searchTerm: searchTerm) { images in
+                        if images.results.count != 0 {
+                            self.statusLabelText = .loading
+                            self.images.append(contentsOf: images.results)
+                            self.totalCount = images.total
+                            self.currentCount = images.results.count
+                            self.update(with: self.images)
+                            self.page += 1
+                            // simulate longer loading times for demo purposes (+ 2 second from the time it is invoked)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                self.prefetchState = .idle
+                            }
                         }
-                    }
-                    if self.currentCount == self.totalCount {
-                        self.statusLabelText = .endOfResult
-                        self.update(with: images.results)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            self.prefetchState = .idle
+                        if self.currentCount == self.totalCount {
+                            self.statusLabelText = .endOfResult
+                            self.update(with: images.results)
+                            // simulate longer loading times for demo purposes (+ 2 second from the time it is invoked)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                self.prefetchState = .idle
+                            }
                         }
-                    }
-                    
-                }
-            }
-        case .paginate:
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                self.dataManager.fetch(page: page, searchTerm: searchTerm) { images in
-                    if !images.results.isEmpty {
-                        self.images.append(contentsOf: images.results)
-                        self.currentCount += images.results.count
-                        self.update(with: self.images)
-                        self.page += 1
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            self.prefetchState = .idle
-                        }
-                    }
-                    if self.currentCount == self.totalCount {
-                        self.statusLabelText = .endOfResult
-                        self.update(with: self.images)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            self.prefetchState = .idle
-                        }
+                        
                     }
                 }
+            case .paginate:
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    self.dataManager.fetch(page: page, searchTerm: searchTerm) { images in
+                        if !images.results.isEmpty {
+                            self.images.append(contentsOf: images.results)
+                            self.currentCount += images.results.count
+                            self.update(with: self.images)
+                            self.page += 1
+                            // simulate longer loading times for demo purposes (+ 2 second from the time it is invoked)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                self.prefetchState = .idle
+                            }
+                        }
+                        if self.currentCount == self.totalCount {
+                            self.statusLabelText = .endOfResult
+                            self.update(with: self.images)
+                            // simulate longer loading times for demo purposes (+ 2 second from the time it is invoked)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                self.prefetchState = .idle
+                            }
+                        }
+                    }
+                }
+                
             }
-            
-        }
         
     }
     

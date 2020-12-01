@@ -21,6 +21,7 @@ extension UIImageView {
                 if let data = try? Data(contentsOf: url) {
                     if let image = UIImage(data: data) {
                         // when the image has been loaded we animate the change, like so:
+                        // simulate longer loading times for demo purposes (+ 1 second from the time it is invoked)
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                             self?.image = image
                             UIView.animate(withDuration: 0.5, animations: {
