@@ -162,7 +162,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
                                 self.prefetchState = .idle
                             }
                         }
-                        if self.currentCount == self.totalCount {
+                        if self.currentCount == self.totalCount || images.results.count == 0 {
                             self.statusLabelText = .endOfResult
                             self.update(with: self.images)
                             // simulate longer loading times for demo purposes (+ 2 second from the time it is invoked)
