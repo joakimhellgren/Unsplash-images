@@ -5,7 +5,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     // MARK: Bindings & logic
     var searchController = UISearchController()
     
-    
     // api
     var dataManager = DataManager()
     
@@ -25,18 +24,15 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         case idle
     }
     
-    var statusText = " "
     // sets the text of the footer textLabel depending on which case we specify in our collection supplementary view
-    var statusLabelText = StatusLabelText.initial
+    var footerState = StatusLabelText.initial
     enum StatusLabelText {
         case initial
         case loading
         case endOfResult
         case blank
     }
-    // view state for supplementary collection view
-    var loadingData = false
-    
+
     // requests data from our api based on the type of request we want.
     var fetchState = FetchState.request
     enum FetchState {
@@ -57,14 +53,46 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         dataSource.supplementaryViewProvider = { collectionView, kind, indexPath -> UICollectionReusableView? in
             switch kind {
             case UICollectionView.elementKindSectionFooter:
-                guard let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "sampleFooterIdentifier", for: indexPath) as? CollectionReusableView else {
-                    fatalError("Header is not registered")
+                guard let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind,
+                                                                                       withReuseIdentifier: "sampleFooterIdentifier",
+                                                                                       for: indexPath) as? CollectionReusableView
+                else {
+                    print("error implementing footerView")
+                    return UICollectionReusableView()
                 }
-                let text = self.statusText, loading = self.loadingData
+                
+                var loading: Bool {
+                    switch self.footerState {
+                    case .initial:
+                        return false
+                    case .loading:
+                        return true
+                    case .endOfResult:
+                        return false
+                    case .blank:
+                        return false
+                    }
+                }
+                
+                var text: String {
+                    switch self.footerState {
+                    case .initial:
+                        return "Search for something"
+                    case .loading:
+                        return " "
+                    case .endOfResult:
+                        return "Nothing here."
+                    case .blank:
+                        return " "
+                    }
+                }
+                
                 footerView.fill(with: text, loading: loading)
                 return footerView
+                
             default:
-                fatalError("Element \(kind) not supported")
+                print("error implementing \(kind)")
+                return UICollectionReusableView()
             }
         }
         return dataSource
@@ -76,7 +104,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         let layout = UICollectionViewFlowLayout()
         layout.itemSize = CGSize(width: 200, height: 200)
         layout.footerReferenceSize = CGSize(width: 0, height: 60)
-        
+    
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.register(CollectionViewCell.self, forCellWithReuseIdentifier: CollectionViewCell.identifier)
         collectionView.register(CollectionReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: "sampleFooterIdentifier")
@@ -93,25 +121,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         snapshot.appendSections([0])
         snapshot.appendItems(images, toSection: 0)
         diffableDataSource.apply(snapshot, animatingDifferences: true)
-        
-        // update footer text / activity indicator
-        if let footer = self.collectionView.supplementaryView(forElementKind: UICollectionView.elementKindSectionFooter, at: IndexPath(item: 0, section: 0)) as? CollectionReusableView {
-            switch statusLabelText {
-            case .initial:
-                statusText = "Search for something"
-                loadingData = false
-            case .loading:
-                statusText = " "
-                loadingData = true
-            case .endOfResult:
-                statusText = "Nothing here.."
-                loadingData = false
-            case .blank:
-                statusText = " "
-                loadingData = false
-            }
-            footer.fill(with: statusText, loading: loadingData)
-        }
     }
     
     
@@ -119,62 +128,36 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     // Initial search requests always trigger the case .request.
     // Pagination (loading more data after our inital request) always trigger the case .paginate
     private func fetchData(searchTerm: String, page: Int) {
-        self.prefetchState = .fetching
-        self.searchInput = searchTerm
-            switch fetchState {
-            case .request:
-                // simulate longer loading times for demo purposes (+ 1.5 second from the time it is invoked)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    self.dataManager.fetch(page: page, searchTerm: searchTerm) { images in
-                        if images.results.count != 0 {
-                            self.statusLabelText = .loading
-                            self.images.append(contentsOf: images.results)
-                            self.totalCount = images.total
-                            self.currentCount = images.results.count
-                            self.update(with: self.images)
-                            self.page += 1
-                            // simulate longer loading times for demo purposes (+ 2 second from the time it is invoked)
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                self.prefetchState = .idle
-                            }
-                        }
-                        if self.currentCount == self.totalCount || images.results.count == 0 {
-                            self.statusLabelText = .endOfResult
-                            self.update(with: images.results)
-                            // simulate longer loading times for demo purposes (+ 2 second from the time it is invoked)
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                self.prefetchState = .idle
-                            }
-                        }
-                    }
-                }
-            case .paginate:
-                // simulate longer loading times for demo purposes (+ 1.5 second from the time it is invoked)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    self.dataManager.fetch(page: page, searchTerm: searchTerm) { images in
-                        if !images.results.isEmpty {
-                            self.images.append(contentsOf: images.results)
-                            self.currentCount += images.results.count
-                            self.update(with: self.images)
-                            self.page += 1
-                            // simulate longer loading times for demo purposes (+ 2 second from the time it is invoked)
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                self.prefetchState = .idle
-                            }
-                        }
-                        if self.currentCount == self.totalCount || images.results.count == 0 {
-                            self.statusLabelText = .endOfResult
-                            self.update(with: self.images)
-                            // simulate longer loading times for demo purposes (+ 2 second from the time it is invoked)
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                self.prefetchState = .idle
-                            }
-                        }
-                    }
-                }
-            }
+        prefetchState = .fetching
+        searchInput = searchTerm
+        dataManager.fetch(page: page, searchTerm: searchTerm) { images in
+            self.responseHandler(result: images)
+        }
     }
     
+    private func responseHandler(result: Images) {
+        if result.results.count != 0 {
+            self.footerState = .loading
+            self.images.append(contentsOf: result.results)
+            self.totalCount = result.total
+            switch self.fetchState {
+            case .request:
+                self.currentCount = result.results.count
+                self.page += 1
+            case .paginate:
+                self.currentCount += result.results.count
+                self.page += 1
+            }
+            if self.currentCount == self.totalCount && self.currentCount != 0 {
+                self.footerState = .endOfResult
+            }
+            self.update(with: self.images)
+            // simulate longer loading times for demo purposes (+ 2 second from the time it is invoked)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                self.prefetchState = .idle
+            }
+        }
+    }
     
     override func loadView() {
         view = collectionView
@@ -192,8 +175,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        // update our footer with the "initial" view state
-        self.statusLabelText = .initial
+        if page == 1 { footerState = .initial }
         self.update(with: images)
     }
     
@@ -211,7 +193,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         // When performing a new search we reset our data
         images = []
-        statusLabelText = .loading
+        footerState = .loading
         fetchState = .request
         page = 1
         update(with: self.images)
@@ -228,7 +210,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     // calls .paginate request when user scrolls close to the bottom of the view container.
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard prefetchState == .idle else { return }
-        self.statusLabelText = .loading
         let position = scrollView.contentOffset.y
         if position >= collectionView.contentSize.height - scrollView.frame.size.height {
             if let input = searchInput,

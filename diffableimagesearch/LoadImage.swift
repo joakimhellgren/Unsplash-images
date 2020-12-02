@@ -21,8 +21,8 @@ extension UIImageView {
                 if let data = try? Data(contentsOf: url) {
                     if let image = UIImage(data: data) {
                         // when the image has been loaded we animate the change, like so:
-                        // simulate longer loading times for demo purposes (+ 1 second from the time it is invoked)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                       
+                        DispatchQueue.main.async {
                             self?.image = image
                             UIView.animate(withDuration: 0.5, animations: {
                                 self?.alpha = 1
@@ -36,42 +36,3 @@ extension UIImageView {
     }
 }
 
-
-
-/*
- 
- // MARK: Does same thing as above uncommented code block. I am not sure which one is considered best practice for my use case.
- extension UIImageView {
-     func dlImg(from url: URL, completion: @escaping (Data?, URLResponse?, Error?) -> ()) {
-         DispatchQueue.main.async { [weak self] in
-             self?.backgroundColor = .lightGray
-             UIView.animate(withDuration: 0.5) {
-                 self?.alpha = 0.25
-             }
-         }
-         URLSession.shared.dataTask(with: url, completionHandler: completion).resume()
-     }
-
-     func load(url: URL) {
-         
-         //print("Download started")
-         dlImg(from: url) { data, response, error in
-             guard let data = data, error == nil else { return }
-             //print(response?.suggestedFilename ?? url.lastPathComponent)
-             //print("Donwload finished")
-             DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
-                 UIView.animate(withDuration: 0.5) {
-                     self?.image = UIImage(data: data)
-                     self?.alpha = 1
-                 }
-                 
-             }
-         }
-     }
- }
-
-
-
-
- 
- */

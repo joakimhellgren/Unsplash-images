@@ -8,8 +8,10 @@
 import UIKit
 
 class CollectionReusableView: UICollectionReusableView {
-    private let titleLabel = UILabel()
-    private let activityIndicator = UIActivityIndicatorView()
+    
+    private var titleLabel = UILabel()
+    private var activityIndicator = UIActivityIndicatorView()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         addSubview(activityIndicator)
@@ -19,28 +21,20 @@ class CollectionReusableView: UICollectionReusableView {
     }
     
     required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        if let label = aDecoder.decodeObject() as? UILabel,
+           let loader = aDecoder.decodeObject() as? UIActivityIndicatorView {
+            self.titleLabel = label
+            self.activityIndicator = loader
+        } else {
+            return nil
+        }
+        super.init(coder: aDecoder)
     }
     
     func fill(with title: String, loading: Bool) {
         titleLabel.text = title
         titleLabel.textAlignment = .center
-        if loading {
-            activityIndicator.startAnimating()
-        } else {
-            activityIndicator.stopAnimating()
-        }
+        loading ? activityIndicator.startAnimating() : activityIndicator.stopAnimating()
     }
 }
 
-
-
-/*
-titleLabel.translatesAutoresizingMaskIntoConstraints = false
-NSLayoutConstraint.activate([
-    titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor),
-    titleLabel.topAnchor.constraint(equalTo: topAnchor),
-    titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor),
-    titleLabel.bottomAnchor.constraint(equalTo: bottomAnchor)
-])
-*/
