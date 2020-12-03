@@ -10,7 +10,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     // api response
     var images: [Result] = []
-    var totalCount = 0
+    var totalCount = 1
     var currentCount = 0
     
     // api queries
@@ -33,12 +33,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         case blank
     }
 
-    // requests data from our api based on the type of request we want.
-    var fetchState = FetchState.request
-    enum FetchState {
-        case request
-        case paginate
-    }
     
      // MARK: diffable data source
     private lazy var diffableDataSource: UICollectionViewDiffableDataSource<Int, Result> = {
@@ -107,7 +101,9 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.register(CollectionViewCell.self, forCellWithReuseIdentifier: CollectionViewCell.identifier)
-        collectionView.register(CollectionReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: "sampleFooterIdentifier")
+        collectionView.register(CollectionReusableView.self,
+                                forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter,
+                                withReuseIdentifier: "sampleFooterIdentifier")
         return collectionView
     }()
     
@@ -124,38 +120,32 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     }
     
     
-    // performs API requests based on the type request we have specified.
-    // Initial search requests always trigger the case .request.
-    // Pagination (loading more data after our inital request) always trigger the case .paginate
+    // performs API requests
     private func fetchData(searchTerm: String, page: Int) {
         prefetchState = .fetching
         searchInput = searchTerm
+        update(with: images)
         dataManager.fetch(page: page, searchTerm: searchTerm) { images in
             self.responseHandler(result: images)
         }
     }
     
+    // handle response
     private func responseHandler(result: Images) {
-        if result.results.count != 0 {
-            self.footerState = .loading
-            self.images.append(contentsOf: result.results)
-            self.totalCount = result.total
-            switch self.fetchState {
-            case .request:
-                self.currentCount = result.results.count
-                self.page += 1
-            case .paginate:
-                self.currentCount += result.results.count
-                self.page += 1
-            }
-            if self.currentCount == self.totalCount && self.currentCount != 0 {
-                self.footerState = .endOfResult
-            }
-            self.update(with: self.images)
-            // simulate longer loading times for demo purposes (+ 2 second from the time it is invoked)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                self.prefetchState = .idle
-            }
+        if result.results.isEmpty {
+            footerState = .endOfResult
+        } else {
+            images.append(contentsOf: result.results)
+            currentCount += result.results.count
+            totalCount = result.total
+            page += 1
+            footerState = .loading
+            if currentCount == totalCount { footerState = .endOfResult }
+            
+        }
+        update(with: images)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            self.prefetchState = .idle
         }
     }
     
@@ -175,8 +165,10 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        if page == 1 { footerState = .initial }
-        self.update(with: images)
+        if page == 1 {
+            footerState = .initial
+            update(with: images)
+        }
     }
     
     
@@ -184,7 +176,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
         let view = mainStoryboard.instantiateViewController(identifier: "DetailsViewController") as! DetailsViewController
-        let image = self.images[indexPath.row]
+        let image = images[indexPath.row]
         view.configure(user: image.user.username, image: image.urls.regular, date: "created: \(image.created_at)", description: image.description ?? "no description available")
         self.navigationController?.pushViewController(view, animated: true)
     }
@@ -193,10 +185,10 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         // When performing a new search we reset our data
         images = []
-        footerState = .loading
-        fetchState = .request
+        currentCount = 0
+        totalCount = 1
+        update(with: images)
         page = 1
-        update(with: self.images)
         // request a new search for the first page
         // with our users input as the secondary query for our api
         if let input = searchController.searchBar.text {
@@ -217,7 +209,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
                currentCount > 1,
                page > 1,
                currentCount < totalCount {
-                fetchState = .paginate
                 fetchData(searchTerm: input, page: page)
             }
         }
