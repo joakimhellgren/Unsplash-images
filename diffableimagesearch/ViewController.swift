@@ -8,6 +8,8 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     // api
     var dataManager = DataManager()
     
+    var initState = true
+    
     // api response
     var images: [Result] = []
     var totalCount = 1
@@ -124,9 +126,9 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     private func fetchData(searchTerm: String, page: Int) {
         prefetchState = .fetching
         searchInput = searchTerm
-        update(with: images)
         dataManager.fetch(page: page, searchTerm: searchTerm) { images in
             self.responseHandler(result: images)
+            self.update(with: self.images)
         }
     }
     
@@ -141,9 +143,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
             page += 1
             footerState = .loading
             if currentCount == totalCount { footerState = .endOfResult }
-            
         }
-        update(with: images)
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             self.prefetchState = .idle
         }
@@ -165,10 +165,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        if page == 1 {
-            footerState = .initial
-            update(with: images)
-        }
     }
     
     
@@ -187,7 +183,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         images = []
         currentCount = 0
         totalCount = 1
-        update(with: images)
         page = 1
         // request a new search for the first page
         // with our users input as the secondary query for our api
@@ -209,7 +204,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
                currentCount > 1,
                page > 1,
                currentCount < totalCount {
-                fetchData(searchTerm: input, page: page)
+               fetchData(searchTerm: input, page: page)
             }
         }
     }
