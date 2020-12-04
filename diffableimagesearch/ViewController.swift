@@ -161,6 +161,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         searchController.searchBar.placeholder = "Search.."
         searchController.searchBar.delegate = self
         navigationItem.searchController = searchController
+        title = "Search ⬇️"
     }
     
     override func viewDidAppear(_ animated: Bool) {
