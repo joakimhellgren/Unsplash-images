@@ -20,25 +20,29 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         case fetching
         case idle
     }
+    
     // sets the text of the footer textLabel depending on which case we specify in our collection supplementary view
-    var footerState = StatusLabelText.initial
+    var footerState = StatusLabelText.blank
     enum StatusLabelText {
-        case initial
         case loading
         case endOfResult
         case blank
     }
+    
      // MARK: diffable data source
     private lazy var diffableDataSource: UICollectionViewDiffableDataSource<Int, Result> = {
+        
         let dataSource = UICollectionViewDiffableDataSource<Int, Result>(collectionView: collectionView) { collectionView, indexPath, item in
             // cell
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CollectionViewCell.identifier, for: indexPath) as! CollectionViewCell
             cell.configure(label: self.images[indexPath.row].user.username, image: self.images[indexPath.row].urls.small)
             return cell
         }
+        
         // supplementary view ( footer )
         dataSource.supplementaryViewProvider = { collectionView, kind, indexPath -> UICollectionReusableView? in
             switch kind {
+            
             case UICollectionView.elementKindSectionFooter:
                 guard let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind,
                                                                                        withReuseIdentifier: "sampleFooterIdentifier",
@@ -47,10 +51,9 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
                     print("error implementing footerView")
                     return UICollectionReusableView()
                 }
+                
                 var loading: Bool {
                     switch self.footerState {
-                    case .initial:
-                        return false
                     case .loading:
                         return true
                     case .endOfResult:
@@ -59,10 +62,9 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
                         return false
                     }
                 }
+                
                 var text: String {
                     switch self.footerState {
-                    case .initial:
-                        return "Search for something"
                     case .loading:
                         return " "
                     case .endOfResult:
@@ -71,6 +73,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
                         return " "
                     }
                 }
+                
                 footerView.fill(with: text, loading: loading)
                 return footerView
             default:
@@ -78,8 +81,11 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
                 return UICollectionReusableView()
             }
         }
+        
         return dataSource
     }()
+    
+    
      // MARK: Collection view setup
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -92,6 +98,8 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
                                 withReuseIdentifier: "sampleFooterIdentifier")
         return collectionView
     }()
+    
+    
     // update the collection view cells / footer with our requested data
     private func update(with items: [Result]) {
         // React.js DOM rendering(?).
@@ -101,6 +109,8 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         snapshot.appendItems(images, toSection: 0)
         diffableDataSource.apply(snapshot, animatingDifferences: true)
     }
+    
+    
     // performs API requests
     private func fetchData(searchTerm: String, page: Int) {
         prefetchState = .fetching
@@ -109,6 +119,8 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
             self.responseHandler(result: images)
         }
     }
+    
+    
     // handle response
     private func responseHandler(result: Images) {
         if result.results.isEmpty {
@@ -126,9 +138,13 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
             self.prefetchState = .idle
         }
     }
+    
+    
     override func loadView() {
         view = collectionView
     }
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionView.backgroundColor = .systemBackground
@@ -139,9 +155,13 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         navigationItem.searchController = searchController
         title = "Search ⬇️"
     }
+    
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
     }
+    
+    
     // Let's user navigate to a new page with more information on the image clicked
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
@@ -150,6 +170,8 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         view.configure(user: image.user.username, image: image.urls.regular, date: "created: \(image.created_at)", description: image.description ?? "no description available")
         self.navigationController?.pushViewController(view, animated: true)
     }
+    
+    
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         // When performing a new search we reset our data
         images = []
@@ -164,6 +186,8 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         }
         searchController.isActive = false
     }
+    
+    
     // calls .paginate request when user scrolls close to the bottom of the view container.
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard prefetchState == .idle else { return }

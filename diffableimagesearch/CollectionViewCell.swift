@@ -9,20 +9,7 @@ import UIKit
 
 class CollectionViewCell: UICollectionViewCell {
     
-    
-    
-    
-    var task: URLSessionTask!
-    
-    
-    
-    
-    
-    
-    
-    
     static let identifier = "cell"
-    
     
     private var myLabel: UILabel = {
         let label = UILabel()
@@ -37,7 +24,6 @@ class CollectionViewCell: UICollectionViewCell {
         imageView.alpha = 1
         return imageView
     }()
-    
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -57,8 +43,6 @@ class CollectionViewCell: UICollectionViewCell {
         super.init(coder: aDecoder)
     }
     
-    
-    
     override func layoutSubviews() {
         super.layoutSubviews()
         myLabel.frame = CGRect(x: 5, y: contentView.frame.size.height - 50,
@@ -71,7 +55,7 @@ class CollectionViewCell: UICollectionViewCell {
     
     public func configure(label: String, image: URL) {
         myLabel.text = label
-        loadImage(from: image)
+        myImageView.loadImage(from: image)
     }
     
     override func prepareForReuse() {
@@ -100,38 +84,6 @@ class CollectionViewCell: UICollectionViewCell {
         })
     }
     
-    
-    func loadImage(from url: URL) {
-        myImageView.image = nil
-        myImageView.backgroundColor = .darkGray
-        
-        if let task = task {
-            task.cancel()
-        }
-        
-        if let imageFromCache = imageCache.object(forKey: url.absoluteString as AnyObject) as? UIImage {
-            myImageView.image = imageFromCache
-            return
-        }
-        
-        task = URLSession.shared.dataTask(with: url) { ( data, response, error) in
-            
-            guard
-                let data = data,
-                let newImage = UIImage(data: data)
-            else {
-                print("couldn't load image from url: \(url)")
-                return
-            }
-            
-            imageCache.setObject(newImage, forKey: url.absoluteString as AnyObject)
-            
-            DispatchQueue.main.async {
-                self.myImageView.image = newImage
-            }
-        }
-        
-        task.resume()
-    }
+   
     
 }
