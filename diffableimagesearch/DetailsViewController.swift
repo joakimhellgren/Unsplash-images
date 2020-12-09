@@ -13,8 +13,8 @@ class DetailsViewController: UIViewController {
     
     private let activityIndicator = UIActivityIndicatorView()
     
-    private let myImageView: UIImageView = {
-        let imageView = UIImageView()
+    private let myImageView: CustomImageView = {
+        let imageView = CustomImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         return imageView
@@ -56,10 +56,11 @@ class DetailsViewController: UIViewController {
     public func configure(user: String, image: URL, date: String, description: String) {
         activityIndicator.startAnimating()
         title = user
-        myImageView.load(url: image)
+        myImageView.loadImage(from: image)
         dateLabel.text = date
         descriptionLabel.text = description
     }
+    
     
   
 

@@ -1,7 +1,10 @@
 import UIKit
 class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDelegate {
+    
+    
     // MARK: Bindings & logic
     var searchController = UISearchController()
+    
     // api
     var dataManager = DataManager()
     // api response
