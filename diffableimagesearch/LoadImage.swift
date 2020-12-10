@@ -15,6 +15,9 @@ class CustomImageView: UIImageView {
     
     func loadImage(from url: URL) {
         image = nil
+        DispatchQueue.main.async {
+            self.backgroundColor = .darkGray
+        }
         
         if let task = task {
             task.cancel()

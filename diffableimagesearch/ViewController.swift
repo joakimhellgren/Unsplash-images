@@ -188,14 +188,10 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     }
     
     
-    // calls .paginate request when user scrolls close to the bottom of the view container.
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        guard prefetchState == .idle else { return }
-        let position = scrollView.contentOffset.y
-        if position >= collectionView.contentSize.height - scrollView.frame.size.height {
-            if let input = searchInput, currentCount > 0, page > 1 {
-                fetchData(searchTerm: input, page: page)
-            }
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        if let input = searchInput, currentCount > 0, page > 1, indexPath.row == images.count - 1 {
+            fetchData(searchTerm: input, page: page)
         }
     }
+    
 }
