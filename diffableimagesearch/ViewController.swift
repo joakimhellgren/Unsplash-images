@@ -44,32 +44,28 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
             switch kind {
             
             case UICollectionView.elementKindSectionFooter:
-                guard let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind,
-                                                                                       withReuseIdentifier: "sampleFooterIdentifier",
-                                                                                       for: indexPath) as? CollectionReusableView
+                guard let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "sampleFooterIdentifier", for: indexPath) as? CollectionReusableView
                 else {
                     print("error implementing footerView")
                     return UICollectionReusableView()
                 }
                 
+                // set state of activity indicator in footer
                 var loading: Bool {
                     switch self.footerState {
                     case .loading:
                         return true
-                    case .endOfResult:
-                        return false
-                    case .blank:
+                    case .endOfResult, .blank:
                         return false
                     }
                 }
                 
+                // set state of text label in footer
                 var text: String {
                     switch self.footerState {
-                    case .loading:
-                        return " "
                     case .endOfResult:
                         return "Nothing here."
-                    case .blank:
+                    case .blank, .loading:
                         return " "
                     }
                 }
@@ -93,9 +89,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         layout.footerReferenceSize = CGSize(width: 0, height: 60)
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.register(CollectionViewCell.self, forCellWithReuseIdentifier: CollectionViewCell.identifier)
-        collectionView.register(CollectionReusableView.self,
-                                forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter,
-                                withReuseIdentifier: "sampleFooterIdentifier")
+        collectionView.register(CollectionReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: "sampleFooterIdentifier")
         return collectionView
     }()
     
@@ -118,10 +112,11 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         dataManager.fetch(page: page, searchTerm: searchTerm) { images in
             self.responseHandler(result: images)
         }
+        prefetchState = .idle
     }
     
     
-    // handle response
+    // handle response from api
     private func responseHandler(result: Images) {
         if result.results.isEmpty {
             footerState = .endOfResult
@@ -134,9 +129,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
             if currentCount == totalCount { footerState = .endOfResult }
         }
         update(with: self.images)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            self.prefetchState = .idle
-        }
     }
     
     
