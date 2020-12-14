@@ -60,10 +60,6 @@ class DetailsViewController: UIViewController {
         dateLabel.text = date
         descriptionLabel.text = description
     }
-    
-    
-  
-
 
 }
 

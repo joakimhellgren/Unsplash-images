@@ -1,6 +1,16 @@
 import UIKit
+
+
 class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDelegate {
     
+    let customAlert = AlertViewController()
+    
+    private var startLabel: UILabel = {
+        let startLabel = UILabel()
+        startLabel.textAlignment = .center
+        startLabel.text = "Hello world."
+        return startLabel
+    }()
     
     // MARK: Bindings & logic
     var searchController = UISearchController()
@@ -28,6 +38,10 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         case endOfResult
         case blank
     }
+    
+    private var showAlert = true
+   
+    
     
      // MARK: diffable data source
     private lazy var diffableDataSource: UICollectionViewDiffableDataSource<Int, Result> = {
@@ -137,6 +151,8 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     }
     
     
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionView.backgroundColor = .systemBackground
@@ -145,13 +161,22 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         searchController.searchBar.placeholder = "Search.."
         searchController.searchBar.delegate = self
         navigationItem.searchController = searchController
-        title = "Search ⬇️"
+        
+        title = ""
     }
     
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+    
+        if showAlert == true {
+            print("viewDidAppear: showAlert triggered.")
+            customAlert.showAlert(with: "Hello world", message: "This is my custom alert", on: self)
+            showAlert = false
+        }
+
     }
+    
     
     
     // Let's user navigate to a new page with more information on the image clicked
@@ -184,6 +209,12 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         if let input = searchInput, currentCount > 0, page > 1, indexPath.row == images.count - 1 {
             fetchData(searchTerm: input, page: page)
         }
+    }
+    
+    
+    @objc func dismissAlert() {
+        customAlert.dismissAlert()
+        
     }
     
 }

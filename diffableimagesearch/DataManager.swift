@@ -11,7 +11,7 @@ class DataManager {
     let apiURL = "https://api.unsplash.com/search/photos?client_id=aCjNILUQzy5m2pMEiE1Ax9U4-_T9o6KPvKORnwfOxPQ"
     func fetch(page: Int, searchTerm: String, callback: @escaping (Images) -> ()) {
         
-        let urlString = "\(apiURL)&query=\(searchTerm)&page=\(page)&per_page=25"
+        let urlString = "\(apiURL)&query=\(searchTerm)&page=\(page)"
         
         if let url = URL(string: urlString) {
             

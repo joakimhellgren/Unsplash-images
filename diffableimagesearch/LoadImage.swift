@@ -14,15 +14,17 @@ class CustomImageView: UIImageView {
     var task: URLSessionTask?
     
     func loadImage(from url: URL) {
-        // reset data source for dequeued cell (see config method in CollectionViewCell.swift)
+        // set image to nil in case there was already an image assigned.
         image = nil
         // make placeholder background
         // to indicate that something is loading
         DispatchQueue.main.async {
-            self.backgroundColor = .darkGray
+            UIView.animate(withDuration: 0.5) {
+                self.backgroundColor = .darkGray
+            }
         }
         
-        // prevent multple sessions of task for the same image.
+        // prevent multple sessions of the same task.
         if let task = task {
             task.cancel()
         }
@@ -35,11 +37,7 @@ class CustomImageView: UIImageView {
         }
         
         task = URLSession.shared.dataTask(with: url) { ( data, response, error) in
-            
-            guard
-                let data = data,
-                let newImage = UIImage(data: data)
-            else {
+            guard let data = data, let newImage = UIImage(data: data) else {
                 print("couldn't load image from url: \(url)")
                 return
             }
@@ -48,7 +46,10 @@ class CustomImageView: UIImageView {
             imageCache.setObject(newImage, forKey: url.absoluteString as AnyObject)
             
             DispatchQueue.main.async {
-                self.image = newImage
+                UIView.animate(withDuration: 0.5) {
+                    self.image = newImage
+                    self.alpha = 1
+                }
             }
         }
         
@@ -56,3 +57,6 @@ class CustomImageView: UIImageView {
     }
     
 }
+
+
+
