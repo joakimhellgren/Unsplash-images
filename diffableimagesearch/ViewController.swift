@@ -110,7 +110,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     // update the collection view cells / footer with our requested data
     private func update(with items: [Result]) {
-        // React.js DOM rendering(?).
         // compares new data with current data and updates cells/view if any changes were made.
         var snapshot = NSDiffableDataSourceSnapshot<Int, Result>()
         snapshot.appendSections([0])
@@ -142,7 +141,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
             footerState = .loading
             if currentCount == totalCount { footerState = .endOfResult }
         }
-        update(with: self.images)
+        update(with: images)
     }
     
     
@@ -160,8 +159,8 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         collectionView.delegate = self
         searchController.searchBar.placeholder = "Search.."
         searchController.searchBar.delegate = self
+        //searchController.searchBar.isUserInteractionEnabled = false
         navigationItem.searchController = searchController
-        
         title = ""
     }
     
@@ -170,8 +169,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         super.viewDidAppear(animated)
     
         if showAlert == true {
-            print("viewDidAppear: showAlert triggered.")
-            customAlert.showAlert(with: "Hello world", message: "This is my custom alert", on: self)
+            customAlert.showAlert(with: "Hi there, stranger.", message: "Please use this app to search for images residing in the Unsplash database.", on: self)
             showAlert = false
         }
 
@@ -214,7 +212,10 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     @objc func dismissAlert() {
         customAlert.dismissAlert()
-        
+        print("hello")
+    
     }
+    
+    
     
 }
