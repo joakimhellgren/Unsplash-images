@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1412B17425878FCA00758D07 /* AlertViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1412B17325878FCA00758D07 /* AlertViewController.swift */; };
 		1431057A256FE6FE0054CA72 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14310579256FE6FE0054CA72 /* AppDelegate.swift */; };
 		1431057C256FE6FE0054CA72 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1431057B256FE6FE0054CA72 /* SceneDelegate.swift */; };
 		1431057E256FE6FE0054CA72 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1431057D256FE6FE0054CA72 /* ViewController.swift */; };
@@ -23,7 +22,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		1412B17325878FCA00758D07 /* AlertViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertViewController.swift; sourceTree = "<group>"; };
 		14310576256FE6FE0054CA72 /* diffableimagesearch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = diffableimagesearch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		14310579256FE6FE0054CA72 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		1431057B256FE6FE0054CA72 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -72,7 +70,6 @@
 			children = (
 				14310579256FE6FE0054CA72 /* AppDelegate.swift */,
 				1431057B256FE6FE0054CA72 /* SceneDelegate.swift */,
-				1412B17325878FCA00758D07 /* AlertViewController.swift */,
 				1431057D256FE6FE0054CA72 /* ViewController.swift */,
 				1456CD5E2575274E008441DC /* DetailsViewController.swift */,
 				1431059F2574D4B70054CA72 /* DataManager.swift */,
@@ -161,7 +158,6 @@
 				1431059825739A5A0054CA72 /* CollectionReusableView.swift in Sources */,
 				143105A02574D4B70054CA72 /* DataManager.swift in Sources */,
 				1456CD5F2575274E008441DC /* DetailsViewController.swift in Sources */,
-				1412B17425878FCA00758D07 /* AlertViewController.swift in Sources */,
 				1431057E256FE6FE0054CA72 /* ViewController.swift in Sources */,
 				143105952572A1190054CA72 /* CollectionViewCell.swift in Sources */,
 				1431058F256FF87B0054CA72 /* Images.swift in Sources */,

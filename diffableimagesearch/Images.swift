@@ -19,16 +19,13 @@ struct Result: Decodable, Hashable {
     let description: String?
     let urls: Urls
     let user: Users
-    
 }
 
 struct Urls: Decodable, Hashable {
     let small: URL
     let regular: URL
-
 }
 
 struct Users: Decodable, Hashable {
     let username: String
-
 }

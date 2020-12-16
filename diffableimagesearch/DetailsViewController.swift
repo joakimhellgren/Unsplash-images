@@ -10,22 +10,18 @@ import UIKit
 class DetailsViewController: UIViewController {
     
     private var detailsViewController: UIView?
-    
     private let activityIndicator = UIActivityIndicatorView()
-    
     private let myImageView: CustomImageView = {
         let imageView = CustomImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         return imageView
     }()
-    
     private let dateLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .left
         return label
     }()
-
     private let descriptionLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
@@ -38,7 +34,6 @@ class DetailsViewController: UIViewController {
         guard let detailsViewController = detailsViewController else {
             return
         }
-        
         detailsViewController.backgroundColor = .systemBackground
         detailsViewController.frame = view.bounds
         view.addSubview(detailsViewController)
@@ -52,7 +47,6 @@ class DetailsViewController: UIViewController {
         detailsViewController.addSubview(descriptionLabel)
     }
     
-    
     public func configure(user: String, image: URL, date: String, description: String) {
         activityIndicator.startAnimating()
         title = user
@@ -60,6 +54,5 @@ class DetailsViewController: UIViewController {
         dateLabel.text = date
         descriptionLabel.text = description
     }
-
 }
 

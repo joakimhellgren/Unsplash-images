@@ -10,13 +10,11 @@ import UIKit
 class CollectionViewCell: UICollectionViewCell {
     
     static let identifier = "cell"
-    
     private var myLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
         return label
     }()
-    
     private var myImageView: CustomImageView = {
         let imageView = CustomImageView()
         imageView.contentMode = .scaleAspectFill
@@ -45,12 +43,8 @@ class CollectionViewCell: UICollectionViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        myLabel.frame = CGRect(x: 5, y: contentView.frame.size.height - 50,
-                               width: contentView.frame.size.width - 10,
-                               height: 50)
-        myImageView.frame = CGRect(x: 5, y: 0,
-                                   width: contentView.frame.size.width - 10,
-                                   height: contentView.frame.size.height - 50)
+        myLabel.frame = CGRect(x: 5, y: contentView.frame.size.height - 50, width: contentView.frame.size.width - 10, height: 50)
+        myImageView.frame = CGRect(x: 5, y: 0, width: contentView.frame.size.width - 10, height: contentView.frame.size.height - 50)
     }
     
     public func configure(label: String, image: URL) {
@@ -65,9 +59,6 @@ class CollectionViewCell: UICollectionViewCell {
         myImageView.alpha = 1
     }
     
-    
-    
-    
     // feedback animation when user taps on a cell
     override var isHighlighted: Bool {
         didSet {
@@ -78,12 +69,8 @@ class CollectionViewCell: UICollectionViewCell {
     func toggleIsHighlighted() {
         UIView.animate(withDuration: 0.1, delay: 0, options: [.curveEaseOut], animations: {
             self.alpha = self.isHighlighted ? 0.9 : 1.0
-            self.transform = self.isHighlighted ?
-                CGAffineTransform.identity.scaledBy(x: 0.97, y: 0.97) :
-                CGAffineTransform.identity
+            self.transform = self.isHighlighted ? CGAffineTransform.identity.scaledBy(x: 0.97, y: 0.97) : CGAffineTransform.identity
         })
     }
-    
-   
     
 }

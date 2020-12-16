@@ -10,9 +10,7 @@ import UIKit
 let imageCache = NSCache<AnyObject, AnyObject>()
 
 class CustomImageView: UIImageView {
-    
     var task: URLSessionTask?
-    
     func loadImage(from url: URL) {
         // set image to nil in case there was already an image assigned.
         image = nil

@@ -2,15 +2,7 @@ import UIKit
 
 
 class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDelegate {
-    
-    let customAlert = AlertViewController()
-    
-    private var startLabel: UILabel = {
-        let startLabel = UILabel()
-        startLabel.textAlignment = .center
-        startLabel.text = "Hello world."
-        return startLabel
-    }()
+
     
     // MARK: Bindings & logic
     var searchController = UISearchController()
@@ -39,31 +31,97 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         case blank
     }
     
-    private var showAlert = true
-   
+    //MARK: Welcome message configuration
+    private var showPopupMessage = true
+    private let popupBackgroundView: UIView = {
+       let popupBackgroundView = UIView()
+        popupBackgroundView.backgroundColor = .black
+        popupBackgroundView.alpha = 0
+        return popupBackgroundView
+    }()
+    private let popupView: UIView = {
+       let popupView = UIView()
+        popupView.backgroundColor = .white
+        popupView.layer.masksToBounds = true
+        popupView.layer.cornerRadius = 12
+        return popupView
+    }()
     
-    
-     // MARK: diffable data source
-    private lazy var diffableDataSource: UICollectionViewDiffableDataSource<Int, Result> = {
+
+    func showPopup(with title: String, message: String, on viewController: ViewController) {
+        popupBackgroundView.frame = self.view.bounds
+        self.view.addSubview(popupBackgroundView)
+        popupView.frame = CGRect(x: 40, y: -300, width: self.view.frame.size.width - 80, height: 300)
+        popupView.center = CGPoint(x: 210, y: 250)
+        popupView.alpha = 0
+        popupView.backgroundColor = .secondarySystemBackground
+        self.view.addSubview(popupView)
         
+        let titleLabel = UILabel(frame: CGRect(x: 0, y: 0, width: popupView.frame.size.width, height: 80))
+        titleLabel.text = title
+        titleLabel.font = .preferredFont(forTextStyle:  .title2)
+        titleLabel.textAlignment = .center
+        popupView.addSubview(titleLabel)
+
+        let messageLabel = UILabel(frame: CGRect(x: 50, y: 80, width: popupView.frame.size.width - 100, height: 170))
+        messageLabel.numberOfLines = 0
+        messageLabel.text = message
+        messageLabel.textAlignment = .center
+        popupView.addSubview(messageLabel)
+        
+        let button = UIButton(type: .system, primaryAction: UIAction(title: "Button title", handler: { _ in self.dismissPopup() }))
+        button.frame = CGRect(x: 0, y: popupView.frame.size.height - 50, width: popupView.frame.size.width, height: 50)
+        button.setTitle("Thanks, I guess?", for: .normal)
+        button.setTitleColor(.link, for: .normal)
+        popupView.addSubview(button)
+        
+        UIView.animate(withDuration: 0.25, animations: {
+            self.popupBackgroundView.alpha = 0.6
+        }, completion: { done in
+            if done {
+                UIView.animate(withDuration: 0.25, animations: {
+                    self.popupView.center = CGPoint(x: 210, y: 300)
+                    self.popupView.alpha = 1
+                })
+            }
+        })
+        
+    }
+    
+    func dismissPopup() {
+        UIView.animate(withDuration: 0.25, animations: {
+            self.popupView.alpha = 0
+        }, completion: { done in
+            if done {
+                UIView.animate(withDuration: 0.25, animations: {
+                    self.popupBackgroundView.alpha = 0
+                }, completion: { done in
+                    if done {
+                        self.popupView.removeFromSuperview()
+                        self.popupBackgroundView.removeFromSuperview()
+                    }
+                })
+            }
+        })
+    }
+    
+    
+     // MARK: DDS configuration
+    private lazy var diffableDataSource: UICollectionViewDiffableDataSource<Int, Result> = {
         let dataSource = UICollectionViewDiffableDataSource<Int, Result>(collectionView: collectionView) { collectionView, indexPath, item in
-            // cell
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CollectionViewCell.identifier, for: indexPath) as! CollectionViewCell
             cell.configure(label: self.images[indexPath.row].user.username, image: self.images[indexPath.row].urls.small)
             return cell
         }
-        
-        // supplementary view ( footer )
+        // footer
         dataSource.supplementaryViewProvider = { collectionView, kind, indexPath -> UICollectionReusableView? in
             switch kind {
-            
             case UICollectionView.elementKindSectionFooter:
                 guard let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "sampleFooterIdentifier", for: indexPath) as? CollectionReusableView
                 else {
                     print("error implementing footerView")
                     return UICollectionReusableView()
                 }
-                
                 // set state of activity indicator in footer
                 var loading: Bool {
                     switch self.footerState {
@@ -73,7 +131,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
                         return false
                     }
                 }
-                
                 // set state of text label in footer
                 var text: String {
                     switch self.footerState {
@@ -83,7 +140,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
                         return " "
                     }
                 }
-                
                 footerView.fill(with: text, loading: loading)
                 return footerView
             default:
@@ -91,12 +147,11 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
                 return UICollectionReusableView()
             }
         }
-        
         return dataSource
     }()
     
     
-     // MARK: Collection view setup
+     // MARK: Collection view configuration
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.itemSize = CGSize(width: 200, height: 200)
@@ -107,6 +162,21 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         return collectionView
     }()
     
+    // Let's user navigate to a new page with more information on the image clicked
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+        let view = mainStoryboard.instantiateViewController(identifier: "DetailsViewController") as! DetailsViewController
+        let image = images[indexPath.row]
+        view.configure(user: image.user.username, image: image.urls.regular, date: "created: \(image.created_at)", description: image.description ?? "no description available")
+        self.navigationController?.pushViewController(view, animated: true)
+    }
+    
+    // pagination
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        if let input = searchInput, currentCount > 0, page > 1, indexPath.row == images.count - 1 {
+            fetchData(searchTerm: input, page: page)
+        }
+    }
     
     // update the collection view cells / footer with our requested data
     private func update(with items: [Result]) {
@@ -117,76 +187,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         diffableDataSource.apply(snapshot, animatingDifferences: true)
     }
     
-    
-    // performs API requests
-    private func fetchData(searchTerm: String, page: Int) {
-        prefetchState = .fetching
-        searchInput = searchTerm
-        dataManager.fetch(page: page, searchTerm: searchTerm) { images in
-            self.responseHandler(result: images)
-        }
-        prefetchState = .idle
-    }
-    
-    
-    // handle response from api
-    private func responseHandler(result: Images) {
-        if result.results.isEmpty {
-            footerState = .endOfResult
-        } else {
-            images.append(contentsOf: result.results)
-            currentCount += result.results.count
-            totalCount = result.total
-            page += 1
-            footerState = .loading
-            if currentCount == totalCount { footerState = .endOfResult }
-        }
-        update(with: images)
-    }
-    
-    
-    override func loadView() {
-        view = collectionView
-    }
-    
-    
-    
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        collectionView.backgroundColor = .systemBackground
-        collectionView.dataSource = diffableDataSource
-        collectionView.delegate = self
-        searchController.searchBar.placeholder = "Search.."
-        searchController.searchBar.delegate = self
-        //searchController.searchBar.isUserInteractionEnabled = false
-        navigationItem.searchController = searchController
-        title = ""
-    }
-    
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-    
-        if showAlert == true {
-            customAlert.showAlert(with: "Hi there, stranger.", message: "Please use this app to search for images residing in the Unsplash database.", on: self)
-            showAlert = false
-        }
-
-    }
-    
-    
-    
-    // Let's user navigate to a new page with more information on the image clicked
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
-        let view = mainStoryboard.instantiateViewController(identifier: "DetailsViewController") as! DetailsViewController
-        let image = images[indexPath.row]
-        view.configure(user: image.user.username, image: image.urls.regular, date: "created: \(image.created_at)", description: image.description ?? "no description available")
-        self.navigationController?.pushViewController(view, animated: true)
-    }
-    
-    
+    //MARK: Searchbar configuration
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         // When performing a new search we reset our data
         images = []
@@ -203,19 +204,55 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     }
     
     
-    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        if let input = searchInput, currentCount > 0, page > 1, indexPath.row == images.count - 1 {
-            fetchData(searchTerm: input, page: page)
+    //MARK: API configuration
+    private func fetchData(searchTerm: String, page: Int) {
+        // set prefetchState to .fetching to prevent recursion
+        prefetchState = .fetching
+        // store users search word globally (used when paginating)
+        searchInput = searchTerm
+        // fetch data from API and pass it into our request handler method below this block of code.
+        dataManager.fetch(page: page, searchTerm: searchTerm) { images in
+            self.responseHandler(result: images)
+        }
+        prefetchState = .idle
+    }
+    
+    // handle the data that we get from the fetchData method.
+    private func responseHandler(result: Images) {
+        if result.results.isEmpty { footerState = .endOfResult }
+        else {
+            images.append(contentsOf: result.results)
+            currentCount += result.results.count
+            totalCount = result.total
+            page += 1
+            footerState = .loading
+            if currentCount == totalCount { footerState = .endOfResult }
+        }
+        update(with: images)
+    }
+    
+    
+    override func loadView() {
+        view = collectionView
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        collectionView.backgroundColor = .systemBackground
+        collectionView.dataSource = diffableDataSource
+        collectionView.delegate = self
+        searchController.searchBar.placeholder = "Search.."
+        searchController.searchBar.delegate = self
+        navigationItem.searchController = searchController
+        //title = ""
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if showPopupMessage == true {
+            showPopup(with: "Hi there, stranger.", message: "Please use this app to search for images residing in the Unsplash database.", on: self)
+            showPopupMessage = false
         }
     }
-    
-    
-    @objc func dismissAlert() {
-        customAlert.dismissAlert()
-        print("hello")
-    
-    }
-    
-    
     
 }
