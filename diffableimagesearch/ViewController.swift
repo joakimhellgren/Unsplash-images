@@ -47,7 +47,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         return popupView
     }()
     
-
     func showPopup(with title: String, message: String, on viewController: ViewController) {
         popupBackgroundView.frame = self.view.bounds
         self.view.addSubview(popupBackgroundView)
