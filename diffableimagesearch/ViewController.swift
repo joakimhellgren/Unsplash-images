@@ -103,6 +103,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
                 })
             }
         })
+        searchController.searchBar.isUserInteractionEnabled = true
     }
     
     
@@ -250,6 +251,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if showPopupMessage == true {
+            searchController.searchBar.isUserInteractionEnabled = false
             showPopup(with: "Hi there, stranger.", message: "Please use this app to search for images residing in the Unsplash database.", on: self)
             showPopupMessage = false
         }
