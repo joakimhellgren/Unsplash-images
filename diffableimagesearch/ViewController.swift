@@ -56,23 +56,52 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         popupView.backgroundColor = .secondarySystemBackground
         self.view.addSubview(popupView)
         
-        let titleLabel = UILabel(frame: CGRect(x: 0, y: 0, width: popupView.frame.size.width, height: 80))
+        let titleLabel = UILabel(frame: CGRect(x: 0, y: 0, width: popupView.frame.size.width, height: 60))
         titleLabel.text = title
         titleLabel.font = .preferredFont(forTextStyle:  .title2)
         titleLabel.textAlignment = .center
         popupView.addSubview(titleLabel)
+        
+        
 
-        let messageLabel = UILabel(frame: CGRect(x: 50, y: 80, width: popupView.frame.size.width - 100, height: 170))
+        let messageLabel = UILabel(frame: CGRect(x: 16, y: 34, width: popupView.frame.size.width - 32, height: 60))
         messageLabel.numberOfLines = 0
         messageLabel.text = message
         messageLabel.textAlignment = .center
         popupView.addSubview(messageLabel)
         
-        let button = UIButton(type: .system, primaryAction: UIAction(title: "Button title", handler: { _ in self.dismissPopup() }))
+        let emailField: UITextField = {
+            let emailField = UITextField()
+            emailField.frame = CGRect(x: 16, y: popupView.frame.size.height - 200, width: popupView.frame.size.width - 32, height: 40)
+            emailField.placeholder = "Email"
+            emailField.layer.borderWidth = 1
+            emailField.borderStyle = .roundedRect
+            emailField.layer.borderColor = UIColor.black.cgColor
+            return emailField
+        }()
+        popupView.addSubview(emailField)
+        
+        let passwordField: UITextField = {
+            let passwordField = UITextField()
+            passwordField.frame = CGRect(x: 16, y: popupView.frame.size.height - 148, width: popupView.frame.size.width - 32, height: 40)
+            passwordField.borderStyle = .roundedRect
+            passwordField.placeholder = "Password"
+            passwordField.layer.borderWidth = 1
+            passwordField.layer.borderColor = UIColor.black.cgColor
+            passwordField.isSecureTextEntry = true
+            return passwordField
+        }()
+        popupView.addSubview(passwordField)
+        
+        let button = UIButton(type: .system, primaryAction: UIAction(title: "Log in", handler: { _ in self.dismissPopup() }))
         button.frame = CGRect(x: 0, y: popupView.frame.size.height - 50, width: popupView.frame.size.width, height: 50)
-        button.setTitle("Thanks, I guess?", for: .normal)
-        button.setTitleColor(.link, for: .normal)
+        // button.setTitle("Thanks, I guess?", for: .normal)
+        // button.setTitleColor(.link, for: .normal)
         popupView.addSubview(button)
+        
+        let forgotPasswordButton = UIButton(type: .detailDisclosure, primaryAction: UIAction(title: "Forgot password?", handler: { _ in print("churf") }))
+        forgotPasswordButton.frame = CGRect(x: 0, y: popupView.frame.size.height - 10, width: popupView.frame.size.width, height: 50)
+        popupView.addSubview(forgotPasswordButton)
         
         UIView.animate(withDuration: 0.25, animations: {
             self.popupBackgroundView.alpha = 0.6
@@ -104,6 +133,9 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         })
         searchController.searchBar.isUserInteractionEnabled = true
     }
+    
+    
+    
     
     
      // MARK: DDS configuration
@@ -187,16 +219,17 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         diffableDataSource.apply(snapshot, animatingDifferences: true)
     }
     
-    //MARK: Searchbar configuration
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        // When performing a new search we reset our data
+    private func resetDataForNewSearch() {
         images = []
         currentCount = 0
         totalCount = 0
         page = 1
-        // request a new search for the first page
-        // with our users input as the secondary query for our api
-        if let input = searchController.searchBar.text {
+    }
+    
+    //MARK: Searchbar configuration
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        resetDataForNewSearch()
+        if let input = self.searchController.searchBar.text {
             title = "Searching for: \(input)"
             fetchData(searchTerm: input, page: page)
         }
@@ -206,7 +239,8 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     //MARK: API configuration
     private func fetchData(searchTerm: String, page: Int) {
-        // set prefetchState to .fetching to prevent recursion
+        if prefetchState == .fetching { return }
+        // set prefetchState to .fetching to prevent fetchData from triggering when a call is already in progress..
         prefetchState = .fetching
         // store users search word globally (used when paginating)
         searchInput = searchTerm
@@ -247,11 +281,26 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         //title = ""
     }
     
+    let isUserLoggedIn: Bool = false
+    let RGAppNames = [
+        "Unsplashify",
+        "Imagify",
+        "unSplashed",
+        "PicSearchify",
+        "Picstagram",
+        "Unsplashtagram",
+        "Splashify"
+    ]
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if showPopupMessage == true {
             searchController.searchBar.isUserInteractionEnabled = false
-            showPopup(with: "Hi there, stranger.", message: "Please use this app to search for images residing in the Unsplash database.", on: self)
+            if !isUserLoggedIn {
+                let RNG = RGAppNames.randomElement()
+                showPopup(with: "Hi there, stranger.", message: "Login or become a part of \(RNG ?? "our community")!", on: self)
+            }
+            
             showPopupMessage = false
         }
     }
