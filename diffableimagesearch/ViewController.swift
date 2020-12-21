@@ -47,24 +47,22 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         return popupView
     }()
     
-    func showPopup(with title: String, message: String, on viewController: ViewController) {
-        popupBackgroundView.frame = self.view.bounds
-        self.view.addSubview(popupBackgroundView)
-        popupView.frame = CGRect(x: 40, y: -300, width: self.view.frame.size.width - 80, height: 300)
+    func showPopup(with title: String, message: String, userLoggedIn: Bool, on viewController: ViewController) {
+        popupBackgroundView.frame = view.bounds
+        view.addSubview(popupBackgroundView)
+        popupView.frame = CGRect(x: 40, y: -300, width: view.frame.size.width - 80, height: 350)
         popupView.center = CGPoint(x: 210, y: 250)
         popupView.alpha = 0
         popupView.backgroundColor = .secondarySystemBackground
-        self.view.addSubview(popupView)
+        view.addSubview(popupView)
         
-        let titleLabel = UILabel(frame: CGRect(x: 0, y: 0, width: popupView.frame.size.width, height: 60))
+        let titleLabel = UILabel(frame: CGRect(x: 0, y: 0, width: popupView.frame.size.width, height: 54))
         titleLabel.text = title
         titleLabel.font = .preferredFont(forTextStyle:  .title2)
         titleLabel.textAlignment = .center
         popupView.addSubview(titleLabel)
         
-        
-
-        let messageLabel = UILabel(frame: CGRect(x: 16, y: 34, width: popupView.frame.size.width - 32, height: 60))
+        let messageLabel = UILabel(frame: CGRect(x: 16, y: 40, width: popupView.frame.size.width - 32, height: 64))
         messageLabel.numberOfLines = 0
         messageLabel.text = message
         messageLabel.textAlignment = .center
@@ -72,37 +70,33 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         
         let emailField: UITextField = {
             let emailField = UITextField()
-            emailField.frame = CGRect(x: 16, y: popupView.frame.size.height - 200, width: popupView.frame.size.width - 32, height: 40)
+            emailField.frame = CGRect(x: 16, y: 108, width: popupView.frame.size.width - 32, height: 40)
             emailField.placeholder = "Email"
-            emailField.layer.borderWidth = 1
             emailField.borderStyle = .roundedRect
-            emailField.layer.borderColor = UIColor.black.cgColor
             return emailField
         }()
         popupView.addSubview(emailField)
         
         let passwordField: UITextField = {
             let passwordField = UITextField()
-            passwordField.frame = CGRect(x: 16, y: popupView.frame.size.height - 148, width: popupView.frame.size.width - 32, height: 40)
+            passwordField.frame = CGRect(x: 16, y: 158, width: popupView.frame.size.width - 32, height: 40)
             passwordField.borderStyle = .roundedRect
             passwordField.placeholder = "Password"
-            passwordField.layer.borderWidth = 1
-            passwordField.layer.borderColor = UIColor.black.cgColor
             passwordField.isSecureTextEntry = true
             return passwordField
         }()
         popupView.addSubview(passwordField)
         
-        let button = UIButton(type: .system, primaryAction: UIAction(title: "Log in", handler: { _ in self.dismissPopup() }))
-        button.frame = CGRect(x: 0, y: popupView.frame.size.height - 50, width: popupView.frame.size.width, height: 50)
-        // button.setTitle("Thanks, I guess?", for: .normal)
-        // button.setTitleColor(.link, for: .normal)
-        popupView.addSubview(button)
+        let loginButton = UIButton(type: .system, primaryAction: UIAction(title: "Log in", handler: { _ in self.dismissPopup() }))
+        loginButton.frame = CGRect(x: 16, y: 214, width: popupView.frame.size.width - 32, height: 40)
+        loginButton.backgroundColor = .systemBackground
+        popupView.addSubview(loginButton)
         
-        let forgotPasswordButton = UIButton(type: .detailDisclosure, primaryAction: UIAction(title: "Forgot password?", handler: { _ in print("churf") }))
-        forgotPasswordButton.frame = CGRect(x: 0, y: popupView.frame.size.height - 10, width: popupView.frame.size.width, height: 50)
+        let forgotPasswordButton = UIButton(type: .system, primaryAction: UIAction(title: "Forgot password?", handler: { _ in print("churf") }))
+        forgotPasswordButton.frame = CGRect(x: 16, y: popupView.frame.size.height - 32, width: popupView.frame.size.width - 32, height: 20)
+        forgotPasswordButton.contentHorizontalAlignment = .trailing
         popupView.addSubview(forgotPasswordButton)
-        
+       
         UIView.animate(withDuration: 0.25, animations: {
             self.popupBackgroundView.alpha = 0.6
         }, completion: { done in
@@ -282,23 +276,42 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     }
     
     let isUserLoggedIn: Bool = false
-    let RGAppNames = [
-        "Unsplashify",
-        "Imagify",
-        "unSplashed",
-        "PicSearchify",
-        "Picstagram",
-        "Unsplashtagram",
-        "Splashify"
-    ]
+    
     
     override func viewDidAppear(_ animated: Bool) {
+        
+        
+        
+        
         super.viewDidAppear(animated)
         if showPopupMessage == true {
             searchController.searchBar.isUserInteractionEnabled = false
-            if !isUserLoggedIn {
-                let RNG = RGAppNames.randomElement()
-                showPopup(with: "Hi there, stranger.", message: "Login or become a part of \(RNG ?? "our community")!", on: self)
+            switch isUserLoggedIn {
+            case false:
+                let RGAppNames = [
+                    "Unsplashify",
+                    "Imagify",
+                    "unSplashed",
+                    "PicSearchify",
+                    "Picstagram",
+                    "Unsplashtagram",
+                    "Splashify"
+                ]
+                guard let randomAppName = RGAppNames.randomElement() else { return }
+                showPopup(with: "Hi there, stranger.", message: "Welcome to \(randomAppName), please log in to continue!", userLoggedIn: self.isUserLoggedIn, on: self)
+            case true:
+                let RGUserNames = [
+                    "Kyle",
+                    "Ashe-leigh",
+                    "Novah-lee",
+                    "Ashleeigh",
+                    "Corey",
+                    "Florida man",
+                    "CoolDude_1337",
+                ]
+                guard let randomUserName = RGUserNames.randomElement() else { return }
+                showPopup(with: "Welcome back", message: "\(randomUserName)", userLoggedIn: self.isUserLoggedIn, on: self)
+                
             }
             
             showPopupMessage = false
