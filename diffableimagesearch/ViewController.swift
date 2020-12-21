@@ -92,7 +92,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         loginButton.backgroundColor = .systemBackground
         popupView.addSubview(loginButton)
         
-        let forgotPasswordButton = UIButton(type: .system, primaryAction: UIAction(title: "Forgot password?", handler: { _ in print("churf") }))
+        let forgotPasswordButton = UIButton(type: .system, primaryAction: UIAction(title: "Forgot password?", handler: { _ in return }))
         forgotPasswordButton.frame = CGRect(x: 16, y: popupView.frame.size.height - 32, width: popupView.frame.size.width - 32, height: 20)
         forgotPasswordButton.contentHorizontalAlignment = .trailing
         popupView.addSubview(forgotPasswordButton)
