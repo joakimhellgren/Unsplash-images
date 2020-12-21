@@ -2,12 +2,10 @@ import UIKit
 
 
 class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDelegate {
-
     
-    // MARK: Bindings & logic
+    
     var searchController = UISearchController()
-    
-    // api
+    let isUserLoggedIn: Bool = false
     var dataManager = DataManager()
     // api response
     var images: [Result] = []
@@ -16,7 +14,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     // api queries
     var page = 1
     var searchInput: String?
-    // prevent methods from requesting data when a request is already in progress.
+    // prevent fetch from requesting data when a request is already in progress.
     var prefetchState: PrefetchState = .idle
     enum PrefetchState {
         case fetching
@@ -31,23 +29,27 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         case blank
     }
     
+    
+    
+    
     //MARK: Welcome message configuration
+    
     private var showPopupMessage = true
     private let popupBackgroundView: UIView = {
-       let popupBackgroundView = UIView()
+        let popupBackgroundView = UIView()
         popupBackgroundView.backgroundColor = .black
         popupBackgroundView.alpha = 0
         return popupBackgroundView
     }()
     private let popupView: UIView = {
-       let popupView = UIView()
+        let popupView = UIView()
         popupView.backgroundColor = .white
         popupView.layer.masksToBounds = true
         popupView.layer.cornerRadius = 12
         return popupView
     }()
     
-    func showPopup(with title: String, message: String, userLoggedIn: Bool, on viewController: ViewController) {
+    func showPopup(with title: String, message: String, on viewController: ViewController) {
         popupBackgroundView.frame = view.bounds
         view.addSubview(popupBackgroundView)
         popupView.frame = CGRect(x: 40, y: -300, width: view.frame.size.width - 80, height: 350)
@@ -56,7 +58,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         popupView.backgroundColor = .secondarySystemBackground
         view.addSubview(popupView)
         
-        let titleLabel = UILabel(frame: CGRect(x: 0, y: 0, width: popupView.frame.size.width, height: 54))
+        let titleLabel = UILabel(frame: CGRect(x: 16, y: 0, width: popupView.frame.size.width - 32, height: 54))
         titleLabel.text = title
         titleLabel.font = .preferredFont(forTextStyle:  .title2)
         titleLabel.textAlignment = .center
@@ -64,15 +66,19 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         
         let messageLabel = UILabel(frame: CGRect(x: 16, y: 40, width: popupView.frame.size.width - 32, height: 64))
         messageLabel.numberOfLines = 0
+        messageLabel.font = .preferredFont(forTextStyle: .subheadline)
         messageLabel.text = message
-        messageLabel.textAlignment = .center
+        messageLabel.textAlignment = .left
         popupView.addSubview(messageLabel)
         
         let emailField: UITextField = {
             let emailField = UITextField()
             emailField.frame = CGRect(x: 16, y: 108, width: popupView.frame.size.width - 32, height: 40)
             emailField.placeholder = "Email"
-            emailField.borderStyle = .roundedRect
+            let lineView = UIView(frame: CGRect(x: 0, y: emailField.frame.size.height, width: emailField.frame.size.width, height: 0.5))
+            lineView.alpha = 0.75
+            lineView.backgroundColor = .opaqueSeparator
+            emailField.addSubview(lineView)
             return emailField
         }()
         popupView.addSubview(emailField)
@@ -80,9 +86,13 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         let passwordField: UITextField = {
             let passwordField = UITextField()
             passwordField.frame = CGRect(x: 16, y: 158, width: popupView.frame.size.width - 32, height: 40)
-            passwordField.borderStyle = .roundedRect
+            
             passwordField.placeholder = "Password"
             passwordField.isSecureTextEntry = true
+            let lineView = UIView(frame: CGRect(x: 0, y: passwordField.frame.size.height, width: passwordField.frame.size.width, height: 0.5))
+            lineView.alpha = 0.75
+            lineView.backgroundColor = .opaqueSeparator
+            passwordField.addSubview(lineView)
             return passwordField
         }()
         popupView.addSubview(passwordField)
@@ -92,11 +102,20 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         loginButton.backgroundColor = .systemBackground
         popupView.addSubview(loginButton)
         
+        let registerButton = UIButton(type: .system, primaryAction: UIAction(title: "Register", handler: { _ in return }))
+        registerButton.frame = CGRect(x: 16, y: 264, width: popupView.frame.size.width - 32, height: 40)
+        registerButton.backgroundColor = .systemBackground
+        popupView.addSubview(registerButton)
+        
         let forgotPasswordButton = UIButton(type: .system, primaryAction: UIAction(title: "Forgot password?", handler: { _ in return }))
         forgotPasswordButton.frame = CGRect(x: 16, y: popupView.frame.size.height - 32, width: popupView.frame.size.width - 32, height: 20)
         forgotPasswordButton.contentHorizontalAlignment = .trailing
+        
+        
+        
+        
         popupView.addSubview(forgotPasswordButton)
-       
+        
         UIView.animate(withDuration: 0.25, animations: {
             self.popupBackgroundView.alpha = 0.6
         }, completion: { done in
@@ -107,7 +126,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
                 })
             }
         })
-        
     }
     
     func dismissPopup() {
@@ -132,7 +150,8 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     
     
-     // MARK: DDS configuration
+    // MARK: DDS configuration
+    
     private lazy var diffableDataSource: UICollectionViewDiffableDataSource<Int, Result> = {
         let dataSource = UICollectionViewDiffableDataSource<Int, Result>(collectionView: collectionView) { collectionView, indexPath, item in
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CollectionViewCell.identifier, for: indexPath) as! CollectionViewCell
@@ -177,7 +196,43 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     }()
     
     
-     // MARK: Collection view configuration
+    
+    
+    
+    //MARK: API configuration
+    
+    private func fetchData(searchTerm: String, page: Int) {
+        if prefetchState == .fetching { return }
+        // set prefetchState to .fetching to prevent fetchData from triggering when a call is already in progress..
+        prefetchState = .fetching
+        // store users search word globally (used when paginating)
+        searchInput = searchTerm
+        // fetch data from API and pass it into our request handler method below this block of code.
+        dataManager.fetch(page: page, searchTerm: searchTerm) { images in
+            self.responseHandler(result: images)
+        }
+        prefetchState = .idle
+    }
+    
+    // handle the data that we get from the fetchData method.
+    private func responseHandler(result: Images) {
+        if result.results.isEmpty { footerState = .endOfResult }
+        else {
+            images.append(contentsOf: result.results)
+            currentCount += result.results.count
+            totalCount = result.total
+            page += 1
+            footerState = .loading
+            if currentCount == totalCount { footerState = .endOfResult }
+        }
+        update(with: images)
+    }
+    
+    
+    
+    
+    // MARK: Collection view configuration
+    
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.itemSize = CGSize(width: 200, height: 200)
@@ -187,6 +242,11 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         collectionView.register(CollectionReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: "sampleFooterIdentifier")
         return collectionView
     }()
+    
+    
+    
+    
+    // MARK: other
     
     // Let's user navigate to a new page with more information on the image clicked
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -230,36 +290,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         searchController.isActive = false
     }
     
-    
-    //MARK: API configuration
-    private func fetchData(searchTerm: String, page: Int) {
-        if prefetchState == .fetching { return }
-        // set prefetchState to .fetching to prevent fetchData from triggering when a call is already in progress..
-        prefetchState = .fetching
-        // store users search word globally (used when paginating)
-        searchInput = searchTerm
-        // fetch data from API and pass it into our request handler method below this block of code.
-        dataManager.fetch(page: page, searchTerm: searchTerm) { images in
-            self.responseHandler(result: images)
-        }
-        prefetchState = .idle
-    }
-    
-    // handle the data that we get from the fetchData method.
-    private func responseHandler(result: Images) {
-        if result.results.isEmpty { footerState = .endOfResult }
-        else {
-            images.append(contentsOf: result.results)
-            currentCount += result.results.count
-            totalCount = result.total
-            page += 1
-            footerState = .loading
-            if currentCount == totalCount { footerState = .endOfResult }
-        }
-        update(with: images)
-    }
-    
-    
     override func loadView() {
         view = collectionView
     }
@@ -275,15 +305,9 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         //title = ""
     }
     
-    let isUserLoggedIn: Bool = false
-    
-    
     override func viewDidAppear(_ animated: Bool) {
-        
-        
-        
-        
         super.viewDidAppear(animated)
+        
         if showPopupMessage == true {
             searchController.searchBar.isUserInteractionEnabled = false
             switch isUserLoggedIn {
@@ -298,24 +322,14 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
                     "Splashify"
                 ]
                 guard let randomAppName = RGAppNames.randomElement() else { return }
-                showPopup(with: "Hi there, stranger.", message: "Welcome to \(randomAppName), please log in to continue!", userLoggedIn: self.isUserLoggedIn, on: self)
+                showPopup(with: "Hi there, stranger.", message: "Welcome to \(randomAppName), please log in to continue.", on: self)
             case true:
-                let RGUserNames = [
-                    "Kyle",
-                    "Ashe-leigh",
-                    "Novah-lee",
-                    "Ashleeigh",
-                    "Corey",
-                    "Florida man",
-                    "CoolDude_1337",
-                ]
-                guard let randomUserName = RGUserNames.randomElement() else { return }
-                showPopup(with: "Welcome back", message: "\(randomUserName)", userLoggedIn: self.isUserLoggedIn, on: self)
-                
+                return
             }
-            
             showPopupMessage = false
         }
+        
     }
+    
     
 }
