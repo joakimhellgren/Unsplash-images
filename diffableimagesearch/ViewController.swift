@@ -37,7 +37,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     private var showPopupMessage = true
     private let popupBackgroundView: UIView = {
         let popupBackgroundView = UIView()
-        popupBackgroundView.backgroundColor = .black
+        popupBackgroundView.backgroundColor = .secondarySystemFill
         popupBackgroundView.alpha = 0
         return popupBackgroundView
     }()
@@ -52,8 +52,8 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     func showPopup(with title: String, message: String, on viewController: ViewController) {
         popupBackgroundView.frame = view.bounds
         view.addSubview(popupBackgroundView)
-        popupView.frame = CGRect(x: 40, y: -300, width: view.frame.size.width - 80, height: 350)
-        popupView.center = CGPoint(x: 210, y: 250)
+        popupView.frame = CGRect(x: 0, y: 0, width: popupBackgroundView.frame.size.width / 2, height: popupBackgroundView.frame.size.height / 4)
+        popupView.center = CGPoint(x: view.center.x, y: view.center.y)
         popupView.alpha = 0
         popupView.backgroundColor = .secondarySystemBackground
         view.addSubview(popupView)
@@ -117,11 +117,11 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         popupView.addSubview(forgotPasswordButton)
         
         UIView.animate(withDuration: 0.25, animations: {
-            self.popupBackgroundView.alpha = 0.6
+            self.popupBackgroundView.alpha = 1
         }, completion: { done in
             if done {
                 UIView.animate(withDuration: 0.25, animations: {
-                    self.popupView.center = CGPoint(x: 210, y: 300)
+                    
                     self.popupView.alpha = 1
                 })
             }
@@ -135,15 +135,19 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
             if done {
                 UIView.animate(withDuration: 0.25, animations: {
                     self.popupBackgroundView.alpha = 0
+                    
                 }, completion: { done in
                     if done {
+                        
                         self.popupView.removeFromSuperview()
                         self.popupBackgroundView.removeFromSuperview()
+                        self.navigationController?.navigationBar.alpha = 1
                     }
                 })
             }
         })
         searchController.searchBar.isUserInteractionEnabled = true
+        
     }
     
     
@@ -315,7 +319,8 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
+        searchController.view.alpha = 0
+        navigationController?.navigationBar.alpha = 0
         if showPopupMessage == true {
             searchController.searchBar.isUserInteractionEnabled = false
             switch isUserLoggedIn {
