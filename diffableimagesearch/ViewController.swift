@@ -7,13 +7,13 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     var searchController = UISearchController()
     let isUserLoggedIn: Bool = false
     var dataManager = DataManager()
-    // api response
+    // api data / trackers
     var images: [Result] = []
     var totalCount = 0
     var currentCount = 0
-    // api queries
     var page = 1
     var searchInput: String?
+    
     // prevent fetch from requesting data when a request is already in progress.
     var prefetchState: PrefetchState = .idle
     enum PrefetchState {
@@ -37,7 +37,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     private var showPopupMessage = true
     private let popupBackgroundView: UIView = {
         let popupBackgroundView = UIView()
-        popupBackgroundView.backgroundColor = .secondarySystemFill
+        popupBackgroundView.backgroundColor = .systemOrange
         popupBackgroundView.alpha = 0
         return popupBackgroundView
     }()
@@ -52,9 +52,10 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     func showPopup(with title: String, message: String, on viewController: ViewController) {
         popupBackgroundView.frame = view.bounds
         view.addSubview(popupBackgroundView)
-        popupView.frame = CGRect(x: 0, y: 0, width: popupBackgroundView.frame.size.width / 2, height: popupBackgroundView.frame.size.height / 4)
-        popupView.center = CGPoint(x: view.center.x, y: view.center.y)
-        popupView.alpha = 0
+        let popupViewSize = popupBackgroundView.frame.size.width - (popupBackgroundView.frame.size.width / 2)
+        popupView.frame = CGRect(x: 0, y: 0, width: popupViewSize, height: popupViewSize)
+        popupView.center = CGPoint(x: view.center.x, y: view.center.y - (view.center.y / 4))
+        //popupView.alpha = 0
         popupView.backgroundColor = .secondarySystemBackground
         view.addSubview(popupView)
         
@@ -68,12 +69,12 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         messageLabel.numberOfLines = 0
         messageLabel.font = .preferredFont(forTextStyle: .subheadline)
         messageLabel.text = message
-        messageLabel.textAlignment = .left
+        messageLabel.textAlignment = .center
         popupView.addSubview(messageLabel)
         
         let emailField: UITextField = {
             let emailField = UITextField()
-            emailField.frame = CGRect(x: 16, y: 108, width: popupView.frame.size.width - 32, height: 40)
+            emailField.frame = CGRect(x: 16, y: popupView.frame.size.height - 324, width: popupView.frame.size.width - 32, height: 40)
             emailField.placeholder = "Email"
             let lineView = UIView(frame: CGRect(x: 0, y: emailField.frame.size.height, width: emailField.frame.size.width, height: 0.5))
             lineView.alpha = 0.75
@@ -85,36 +86,30 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         
         let passwordField: UITextField = {
             let passwordField = UITextField()
-            passwordField.frame = CGRect(x: 16, y: 158, width: popupView.frame.size.width - 32, height: 40)
-            
+            passwordField.frame = CGRect(x: 16, y: popupView.frame.size.height - 252, width: popupView.frame.size.width - 32, height: 40)
             passwordField.placeholder = "Password"
             passwordField.isSecureTextEntry = true
             let lineView = UIView(frame: CGRect(x: 0, y: passwordField.frame.size.height, width: passwordField.frame.size.width, height: 0.5))
             lineView.alpha = 0.75
             lineView.backgroundColor = .opaqueSeparator
+            let forgotPass = UIButton(type: .system, primaryAction: UIAction(title: "Forgot password?", handler: { _ in return }))
+            forgotPass.frame = CGRect(x: 0, y: passwordField.frame.size.height + 16, width: passwordField.frame.size.width, height: 20)
+            forgotPass.contentHorizontalAlignment = .trailing
             passwordField.addSubview(lineView)
+            passwordField.addSubview(forgotPass)
             return passwordField
         }()
         popupView.addSubview(passwordField)
         
         let loginButton = UIButton(type: .system, primaryAction: UIAction(title: "Log in", handler: { _ in self.dismissPopup() }))
-        loginButton.frame = CGRect(x: 16, y: 214, width: popupView.frame.size.width - 32, height: 40)
+        loginButton.frame = CGRect(x: 16, y: popupView.frame.size.height - 128, width: popupView.frame.size.width - 32, height: 48)
         loginButton.backgroundColor = .systemBackground
         popupView.addSubview(loginButton)
         
         let registerButton = UIButton(type: .system, primaryAction: UIAction(title: "Register", handler: { _ in return }))
-        registerButton.frame = CGRect(x: 16, y: 264, width: popupView.frame.size.width - 32, height: 40)
+        registerButton.frame = CGRect(x: 16, y: popupView.frame.size.height - 64, width: popupView.frame.size.width - 32, height: 48)
         registerButton.backgroundColor = .systemBackground
         popupView.addSubview(registerButton)
-        
-        let forgotPasswordButton = UIButton(type: .system, primaryAction: UIAction(title: "Forgot password?", handler: { _ in return }))
-        forgotPasswordButton.frame = CGRect(x: 16, y: popupView.frame.size.height - 32, width: popupView.frame.size.width - 32, height: 20)
-        forgotPasswordButton.contentHorizontalAlignment = .trailing
-        
-        
-        
-        
-        popupView.addSubview(forgotPasswordButton)
         
         UIView.animate(withDuration: 0.25, animations: {
             self.popupBackgroundView.alpha = 1
@@ -154,7 +149,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     
     
-    // MARK: DDS configuration
+    // MARK: DiffableDataSource configuration
     
     private lazy var diffableDataSource: UICollectionViewDiffableDataSource<Int, Result> = {
         let dataSource = UICollectionViewDiffableDataSource<Int, Result>(collectionView: collectionView) { collectionView, indexPath, item in
@@ -304,6 +299,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     override func loadView() {
         view = collectionView
+        
     }
     
     override func viewDidLoad() {
@@ -319,7 +315,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        searchController.view.alpha = 0
         navigationController?.navigationBar.alpha = 0
         if showPopupMessage == true {
             searchController.searchBar.isUserInteractionEnabled = false
