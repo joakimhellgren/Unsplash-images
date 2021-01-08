@@ -51,9 +51,11 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     func showPopup(with title: String, message: String, on viewController: ViewController) {
         popupBackgroundView.frame = view.bounds
+        
         view.addSubview(popupBackgroundView)
-        let popupViewSize = popupBackgroundView.frame.size.width - (popupBackgroundView.frame.size.width / 2)
-        popupView.frame = CGRect(x: 0, y: 0, width: popupViewSize, height: popupViewSize)
+        let popupViewSize = popupBackgroundView.frame.size.width - 1.125
+        
+        popupView.frame = CGRect(x: 0, y: 0, width: popupViewSize, height: popupViewSize + 64)
         popupView.center = CGPoint(x: view.center.x, y: view.center.y - (view.center.y / 4))
         //popupView.alpha = 0
         popupView.backgroundColor = .secondarySystemBackground
@@ -125,22 +127,19 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     func dismissPopup() {
         UIView.animate(withDuration: 0.25, animations: {
-            self.popupView.alpha = 0
+            self.popupBackgroundView.alpha = 0
         }, completion: { done in
-            if done {
-                UIView.animate(withDuration: 0.25, animations: {
-                    self.popupBackgroundView.alpha = 0
-                    
-                }, completion: { done in
                     if done {
                         
                         self.popupView.removeFromSuperview()
                         self.popupBackgroundView.removeFromSuperview()
                         self.navigationController?.navigationBar.alpha = 1
+                        
+                        self.collectionView.bounces = true
                     }
-                })
+                
             }
-        })
+        )
         searchController.searchBar.isUserInteractionEnabled = true
         
     }
@@ -315,8 +314,11 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        navigationController?.navigationBar.alpha = 0
+        
         if showPopupMessage == true {
+           
+            collectionView.bounces = false
+            navigationController?.navigationBar.alpha = 0
             searchController.searchBar.isUserInteractionEnabled = false
             switch isUserLoggedIn {
             case false:
