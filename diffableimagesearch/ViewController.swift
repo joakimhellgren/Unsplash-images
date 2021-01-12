@@ -4,9 +4,7 @@ import UIKit
 class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDelegate {
     
     
-    var searchController = UISearchController()
-    let isUserLoggedIn: Bool = false
-    var user: String?
+    // API
     var dataManager = DataManager()
     // api data / trackers
     var images: [Result] = []
@@ -14,13 +12,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     var currentCount = 0
     var page = 1
     var searchInput: String?
-    
-    // prevent fetch from requesting data when a request is already in progress.
-    var prefetchState: PrefetchState = .idle
-    enum PrefetchState {
-        case fetching
-        case idle
-    }
     
     // sets the text of the footer textLabel depending on which case we specify in our collection supplementary view
     var footerState = StatusLabelText.blank
@@ -32,8 +23,10 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     
     
-
     //MARK: Welcome message configuration
+    
+    let isUserLoggedIn: Bool = false
+    var user: String?
     
     private var showPopupMessage = true
     private let popupBackgroundView: UIView = {
@@ -41,6 +34,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         popupBackgroundView.alpha = 0
         return popupBackgroundView
     }()
+    
     private let popupView: UIView = {
         let popupView = UIView()
         popupView.backgroundColor = .white
@@ -134,7 +128,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
                         self.popupView.removeFromSuperview()
                         self.popupBackgroundView.removeFromSuperview()
                         self.collectionView.bounces = true
-                        self.addWelcomeMessage(with: username, on: self)
+                        self.addUserView(with: username, on: self)
                         UIView.animate(withDuration: 0.25, animations: {
                             self.navigationController?.navigationBar.alpha = 1
                         })
@@ -148,6 +142,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     }
     
     
+    
     private let userView: UIView = {
         let userView = UIView()
         userView.backgroundColor = .white
@@ -158,7 +153,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     }()
     
     
-    func addWelcomeMessage(with username: String, on viewController: ViewController) {
+    func addUserView(with username: String, on viewController: ViewController) {
         userView.frame = CGRect(x: 16, y: 0, width: view.frame.width, height: view.frame.height - 32)
         userView.center = CGPoint(x: view.center.x, y: view.center.y)
         view.addSubview(userView)
@@ -174,12 +169,21 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         })
     }
     
-    func dissmissWelcomeMessage() {
-        self.userView.removeFromSuperview()
+    func dismissUserView() {
+        UIView.animate(withDuration: 0.25, animations: {
+            self.userView.alpha = 0
+        }, completion: { done in
+            if done {
+                self.userView.removeFromSuperview()
+            }
+        })
+        
     }
     
     
     
+    
+
     
     // MARK: DiffableDataSource configuration
     
@@ -230,7 +234,14 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     
     
-    //MARK: API configuration
+    //MARK: API methods & coonfig
+    
+    // prevent fetch from requesting data when a request is already in progress.
+    var prefetchState: PrefetchState = .idle
+    enum PrefetchState {
+        case fetching
+        case idle
+    }
     
     private func fetchData(searchTerm: String, page: Int) {
         if prefetchState == .fetching { return }
@@ -245,9 +256,22 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         prefetchState = .idle
     }
     
+    // update the collection view cells / footer with our requested data
+    private func update(with items: [Result]) {
+        // compares new data with current data and updates cells/view if any changes were made.
+        var snapshot = NSDiffableDataSourceSnapshot<Int, Result>()
+        snapshot.appendSections([0])
+        snapshot.appendItems(images, toSection: 0)
+        diffableDataSource.apply(snapshot, animatingDifferences: true)
+    }
+    
+    
     // handle the data that we get from the fetchData method.
     private func responseHandler(result: Images) {
-        if result.results.isEmpty { footerState = .endOfResult }
+        if result.results.isEmpty {
+            footerState = .endOfResult
+            update(with: images)
+        }
         else {
             images.append(contentsOf: result.results)
             currentCount += result.results.count
@@ -255,8 +279,9 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
             page += 1
             footerState = .loading
             if currentCount == totalCount { footerState = .endOfResult }
+            update(with: images)
         }
-        update(with: images)
+        
     }
     
     
@@ -266,26 +291,19 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     private lazy var collectionView: UICollectionView = {
         
-        
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         item.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5)
         let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(0.25))
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitem: item, count: 2)
-        let spacing = CGFloat(10)
-        group.interItemSpacing = .fixed(spacing)
         let section = NSCollectionLayoutSection(group: group)
         let layout = UICollectionViewCompositionalLayout(section: section)
+        
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.register(CollectionViewCell.self, forCellWithReuseIdentifier: CollectionViewCell.identifier)
         collectionView.register(CollectionReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: "sampleFooterIdentifier")
         return collectionView
     }()
-    
-
-    
-    
-    // MARK: other
     
     // Let's user navigate to a new page with more information on the image clicked
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -303,26 +321,23 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         }
     }
     
-    // update the collection view cells / footer with our requested data
-    private func update(with items: [Result]) {
-        // compares new data with current data and updates cells/view if any changes were made.
-        var snapshot = NSDiffableDataSourceSnapshot<Int, Result>()
-        snapshot.appendSections([0])
-        snapshot.appendItems(images, toSection: 0)
-        diffableDataSource.apply(snapshot, animatingDifferences: true)
-    }
+    
+    
+    
+    //MARK: Search bar configuration
+    var searchController = UISearchController()
     
     private func resetDataForNewSearch() {
         images = []
         currentCount = 0
         totalCount = 0
         page = 1
+        
     }
     
-    //MARK: Searchbar configuration
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         resetDataForNewSearch()
-        dissmissWelcomeMessage()
+        dismissUserView()
         if let input = self.searchController.searchBar.text {
             title = "Searching for: \(input)"
             fetchData(searchTerm: input, page: page)
@@ -330,10 +345,13 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         searchController.isActive = false
     }
     
+    
+    // MARK: viewdidload / appear
+    
     override func loadView() {
         view = collectionView
-        
     }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -345,9 +363,9 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         navigationItem.searchController = searchController
     }
     
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
         if showPopupMessage == true {
             collectionView.bounces = false
             navigationController?.navigationBar.alpha = 0
@@ -370,8 +388,5 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
             }
             showPopupMessage = false
         }
-        
     }
-    
-    
 }
