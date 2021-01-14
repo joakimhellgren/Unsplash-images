@@ -159,7 +159,10 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         layout.itemSize = CGSize(width: 200, height: 200)
         layout.footerReferenceSize = CGSize(width: 0, height: 60)
         
+        
+ 
            
+        
         
         let collectionView = UICollectionView(frame: .zero,
                                               collectionViewLayout: layout)
@@ -226,6 +229,8 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        collectionView.alwaysBounceVertical = true
         collectionView.backgroundColor = .systemBackground
         collectionView.dataSource = diffableDataSource
         collectionView.delegate = self
