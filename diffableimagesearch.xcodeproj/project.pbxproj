@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1400610125B0781800A77DEE /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1400610025B0781800A77DEE /* HomeViewController.swift */; };
 		1431057A256FE6FE0054CA72 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14310579256FE6FE0054CA72 /* AppDelegate.swift */; };
 		1431057C256FE6FE0054CA72 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1431057B256FE6FE0054CA72 /* SceneDelegate.swift */; };
 		1431057E256FE6FE0054CA72 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1431057D256FE6FE0054CA72 /* ViewController.swift */; };
@@ -23,6 +24,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1400610025B0781800A77DEE /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		14310576256FE6FE0054CA72 /* diffableimagesearch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = diffableimagesearch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		14310579256FE6FE0054CA72 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		1431057B256FE6FE0054CA72 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -81,6 +83,7 @@
 				143105942572A1190054CA72 /* CollectionViewCell.swift */,
 				1431058E256FF87B0054CA72 /* Images.swift */,
 				1431057F256FE6FE0054CA72 /* Main.storyboard */,
+				1400610025B0781800A77DEE /* HomeViewController.swift */,
 				14310582256FE6FE0054CA72 /* Assets.xcassets */,
 				14310584256FE6FE0054CA72 /* LaunchScreen.storyboard */,
 				14310587256FE6FE0054CA72 /* Info.plist */,
@@ -165,6 +168,7 @@
 				143105952572A1190054CA72 /* CollectionViewCell.swift in Sources */,
 				1431058F256FF87B0054CA72 /* Images.swift in Sources */,
 				1431059B2573A7F40054CA72 /* LoadImage.swift in Sources */,
+				1400610125B0781800A77DEE /* HomeViewController.swift in Sources */,
 				1431057A256FE6FE0054CA72 /* AppDelegate.swift in Sources */,
 				1472FD25258CD4C20036F3E1 /* LoginViewController.swift in Sources */,
 				1431057C256FE6FE0054CA72 /* SceneDelegate.swift in Sources */,
