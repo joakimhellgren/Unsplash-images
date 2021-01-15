@@ -206,7 +206,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         currentCount = 0
         totalCount = 0
         page = 1
-        
+        update(with: images)
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
@@ -214,7 +214,8 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         
         if let input = self.searchController.searchBar.text {
             title = "Searching for: \(input)"
-            fetchData(searchTerm: input, page: page)
+            let inputConcat = input.replacingOccurrences(of: " ", with: "+")
+            fetchData(searchTerm: inputConcat, page: page)
         }
         searchController.isActive = false
     }
