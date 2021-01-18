@@ -15,17 +15,21 @@ class DetailsViewController: UIViewController {
         let imageView = CustomImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
-        
+        imageView.layer.masksToBounds = true
+        imageView.layer.cornerRadius = 12
         return imageView
     }()
     private let dateLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .left
+        label.font = .preferredFont(forTextStyle: .footnote)
         return label
     }()
     private let descriptionLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
+        label.numberOfLines = 10
+        label.font = .preferredFont(forTextStyle: .caption1)
         return label
     }()
     
@@ -39,9 +43,9 @@ class DetailsViewController: UIViewController {
         detailsViewController.frame = view.bounds
         detailsViewController.alwaysBounceVertical = true
         view.addSubview(detailsViewController)
-        myImageView.frame = CGRect(x: 16, y: 16, width: detailsViewController.frame.size.width - 32, height: detailsViewController.frame.size.width - 4)
+        myImageView.frame = CGRect(x: 16, y: 16, width: detailsViewController.frame.size.width - 32, height: detailsViewController.frame.size.width)
         dateLabel.frame = CGRect(x: 16, y: myImageView.frame.height + 16, width: detailsViewController.frame.size.width - 32, height: 50)
-        descriptionLabel.frame = CGRect(x: 16, y: myImageView.frame.height + 48, width: detailsViewController.frame.size.width - 32, height: 50)
+        descriptionLabel.frame = CGRect(x: 16, y: myImageView.frame.height + 64, width: detailsViewController.frame.size.width - 32, height: 50)
         activityIndicator.frame = CGRect(x: 16, y: descriptionLabel.frame.height + 16, width: detailsViewController.frame.size.width - 32, height: detailsViewController.frame.size.width - 4)
         detailsViewController.addSubview(activityIndicator)
         detailsViewController.addSubview(dateLabel)
@@ -53,27 +57,24 @@ class DetailsViewController: UIViewController {
     
     // 2017-12-28T11:39:32-05:00
     
-    
-    public func configure(user: String, image: URL, date: String, description: String) {
-   
-        let dateString = "2016-12-15T22:10:00Z"
+    private func formatDate(date: String) {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-        let datee = dateFormatter.date(from: dateString)
-
+        let formattedDate = dateFormatter.date(from: date)
         dateFormatter.dateStyle = .medium
-        if let fdate = datee {
-            dateLabel.text = dateFormatter.string(from: fdate)
+        if let safeDate = formattedDate {
+            self.dateLabel.text = dateFormatter.string(from: safeDate)
         } else {
-            dateLabel.text = "error"
+            dateLabel.text = "error formatting the date"
         }
-        
-        
+    }
+    
+    public func configure(user: String, image: URL, date: String, description: String) {
+        formatDate(date: date)
         activityIndicator.startAnimating()
-        title = user
+        title = "Image by \(user)"
         myImageView.loadImage(from: image)
-       
-        descriptionLabel.text = description
+        descriptionLabel.text = "\"" + description + "\""
     }
 }
 
