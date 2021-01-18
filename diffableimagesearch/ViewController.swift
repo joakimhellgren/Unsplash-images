@@ -137,6 +137,16 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     // MARK: Collection view configuration
     
+    let flowLayout: UICollectionViewFlowLayout = {
+        let layout = UICollectionViewFlowLayout()
+        layout.minimumInteritemSpacing = 5
+        layout.minimumLineSpacing = 5
+        layout.sectionInset = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        return layout
+    }()
+    
+    
+    
     private lazy var collectionView: UICollectionView = {
 //        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
 //                                              heightDimension: .fractionalHeight(1.0))
@@ -154,13 +164,33 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
 //                                                       count: 2)
 //        let section = NSCollectionLayoutSection(group: group)
 //        let layout = UICollectionViewCompositionalLayout(section: section)
+      
         
-        let layout = UICollectionViewFlowLayout()
-        layout.itemSize = CGSize(width: 200, height: 200)
-        layout.footerReferenceSize = CGSize(width: 0, height: 60)
+//        let layout = UICollectionViewFlowLayout()
+//        layout.itemSize = CGSize(width: 200, height: 200)
+//        layout.footerReferenceSize = CGSize(width: 0, height: 60)
+        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1/3), heightDimension: .fractionalHeight(1))
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
+        let widthDimension = NSCollectionLayoutDimension.fractionalWidth(1)
+        let heightDimension = NSCollectionLayoutDimension.fractionalWidth(1/3)
+
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalWidth(1/3))
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         
- 
+        let headerFooterSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                                     heightDimension: .estimated(44))
+        
+        let sectionFooter = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerFooterSize,
+                                                                       elementKind: UICollectionView.elementKindSectionFooter,
+                                                                         alignment: .bottom)
+
+        let section = NSCollectionLayoutSection(group: group)
+        section.boundarySupplementaryItems = [sectionFooter]
+        let layout = UICollectionViewCompositionalLayout(section: section)
+        
+       
+
            
         
         
@@ -181,7 +211,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         let image = images[indexPath.row]
         view.configure(user: image.user.username,
                        image: image.urls.regular,
-                       date: "created: \(image.created_at)",
+                       date: image.created_at,
                        description: image.description ?? "no description available")
         self.navigationController?.pushViewController(view, animated: true)
     }
@@ -206,7 +236,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         currentCount = 0
         totalCount = 0
         page = 1
-        update(with: images)
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
@@ -247,3 +276,4 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         
     }
 }
+

@@ -43,8 +43,8 @@ class CollectionViewCell: UICollectionViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        myLabel.frame = CGRect(x: 5, y: contentView.frame.size.height - 50, width: contentView.frame.size.width - 10, height: 50)
-        myImageView.frame = CGRect(x: 5, y: 0, width: contentView.frame.size.width - 10, height: contentView.frame.size.height - 50)
+        myLabel.frame = CGRect(x: 8, y: contentView.frame.size.height - 50, width: contentView.frame.size.width - 16, height: 50)
+        myImageView.frame = CGRect(x: 8, y: 0, width: contentView.frame.size.width - 16, height: contentView.frame.size.height - 50)
     }
     
     public func configure(label: String, image: URL) {

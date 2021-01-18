@@ -24,7 +24,7 @@ class HomeViewController: UIViewController {
     
     private let popupView: UIView = {
         let popupView = UIView()
-        popupView.backgroundColor = .white
+        popupView.backgroundColor = .systemBackground
         popupView.layer.masksToBounds = true
         popupView.layer.cornerRadius = 12
         popupView.alpha = 0
@@ -165,7 +165,6 @@ class HomeViewController: UIViewController {
     
     private let userView: UIView = {
         let userView = UIView()
-        userView.backgroundColor = .white
         userView.layer.masksToBounds = true
         userView.layer.cornerRadius = 12
         userView.alpha = 0
@@ -180,15 +179,17 @@ class HomeViewController: UIViewController {
                                 height: view.frame.height - 32)
         userView.center = CGPoint(x: view.center.x,
                                   y: view.center.y)
+
         view.addSubview(userView)
         
         let usernameLabel = UILabel(frame: CGRect(x: 16,
-                                                  y: 128,
+                                                  y: 16,
                                                   width: view.frame.size.width - 32,
                                                   height: 54))
-        usernameLabel.text = "Welcome back, \(username)."
-        usernameLabel.font = .preferredFont(forTextStyle:  .title3)
+        usernameLabel.text = "Welcome back, \(username)"
+        usernameLabel.font = .preferredFont(forTextStyle:  .title1)
         usernameLabel.textAlignment = .center
+        
         userView.addSubview(usernameLabel)
         
         UIView.animate(withDuration: 0.25, animations: {
@@ -196,6 +197,8 @@ class HomeViewController: UIViewController {
         })
     }
     
+    
+    // this method is unused, but remains here for future implementation
     func dismissUserView() {
         UIView.animate(withDuration: 0.25, animations: {
             self.userView.alpha = 0
@@ -204,35 +207,23 @@ class HomeViewController: UIViewController {
                 self.userView.removeFromSuperview()
             }
         })
-        
     }
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        scrollView.backgroundColor = .systemBackground
+        view.backgroundColor = .systemBackground
+        navigationController?.setNavigationBarHidden(true, animated: true)
 
     }
     
     override func viewDidAppear(_ animated: Bool) {
         if showPopupMessage == true {
-            //collectionView.bounces = false
-            //navigationController?.navigationBar.alpha = 0
-            //searchController.searchBar.isUserInteractionEnabled = false
             tabBarController?.tabBar.isHidden = true
             switch isUserLoggedIn {
             case false:
-                let RGAppNames = [
-                    "Unsplashify",
-                    "Imagify",
-                    "unSplashed",
-                    "PicSearchify",
-                    "Picstagram",
-                    "Unsplashtagram",
-                    "Splashify"
-                ]
-                guard let randomAppName = RGAppNames.randomElement() else { return }
                 showPopup(with: "Hello, stranger.",
-                          message: "Welcome to \(randomAppName), log in to continue.",
+                          message: "log in to continue.",
                           on: self)
             case true:
                 return

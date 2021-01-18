@@ -93,17 +93,19 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <viewLayoutGuide key="safeArea" id="qul-na-R3q"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <viewLayoutGuide key="contentLayoutGuide" id="XCI-eZ-sbc"/>
                         <viewLayoutGuide key="frameLayoutGuide" id="bsI-9u-XWz"/>
                     </scrollView>
                     <navigationItem key="navigationItem" id="M1J-nS-EQv"/>
+                    <nil key="simulatedTopBarMetrics"/>
                     <connections>
                         <outlet property="scrollView" destination="kVN-Id-fQX" id="uFv-7X-vCu"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Db6-qa-RY9" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2648" y="-615"/>
+            <point key="canvasLocation" x="2647.826086956522" y="-615.40178571428567"/>
         </scene>
         <!--Home-->
         <scene sceneID="0UC-cR-dWx">
