@@ -19,8 +19,10 @@
 		1431059825739A5A0054CA72 /* CollectionReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1431059725739A5A0054CA72 /* CollectionReusableView.swift */; };
 		1431059B2573A7F40054CA72 /* LoadImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1431059A2573A7F40054CA72 /* LoadImage.swift */; };
 		143105A02574D4B70054CA72 /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1431059F2574D4B70054CA72 /* DataManager.swift */; };
+		143B7DF325B98D1D00CE5BCA /* CoreDataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 143B7DF125B98D1D00CE5BCA /* CoreDataModel.xcdatamodeld */; };
 		1456CD5F2575274E008441DC /* DetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1456CD5E2575274E008441DC /* DetailsViewController.swift */; };
 		1472FD25258CD4C20036F3E1 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1472FD24258CD4C20036F3E1 /* LoginViewController.swift */; };
+		14AB5A5E25B6F5FE00795555 /* FavoritesCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14AB5A5D25B6F5FE00795555 /* FavoritesCollectionViewCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,8 +40,10 @@
 		1431059725739A5A0054CA72 /* CollectionReusableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionReusableView.swift; sourceTree = "<group>"; };
 		1431059A2573A7F40054CA72 /* LoadImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadImage.swift; sourceTree = "<group>"; };
 		1431059F2574D4B70054CA72 /* DataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
+		143B7DF225B98D1D00CE5BCA /* CoreDataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = CoreDataModel.xcdatamodel; sourceTree = "<group>"; };
 		1456CD5E2575274E008441DC /* DetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsViewController.swift; sourceTree = "<group>"; };
 		1472FD24258CD4C20036F3E1 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
+		14AB5A5D25B6F5FE00795555 /* FavoritesCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesCollectionViewCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +81,7 @@
 				1431057D256FE6FE0054CA72 /* ViewController.swift */,
 				1472FD24258CD4C20036F3E1 /* LoginViewController.swift */,
 				1456CD5E2575274E008441DC /* DetailsViewController.swift */,
+				143B7DF125B98D1D00CE5BCA /* CoreDataModel.xcdatamodeld */,
 				1431059F2574D4B70054CA72 /* DataManager.swift */,
 				1431059A2573A7F40054CA72 /* LoadImage.swift */,
 				1431059725739A5A0054CA72 /* CollectionReusableView.swift */,
@@ -84,6 +89,7 @@
 				1431058E256FF87B0054CA72 /* Images.swift */,
 				1431057F256FE6FE0054CA72 /* Main.storyboard */,
 				1400610025B0781800A77DEE /* HomeViewController.swift */,
+				14AB5A5D25B6F5FE00795555 /* FavoritesCollectionViewCell.swift */,
 				14310582256FE6FE0054CA72 /* Assets.xcassets */,
 				14310584256FE6FE0054CA72 /* LaunchScreen.storyboard */,
 				14310587256FE6FE0054CA72 /* Info.plist */,
@@ -163,6 +169,8 @@
 			files = (
 				1431059825739A5A0054CA72 /* CollectionReusableView.swift in Sources */,
 				143105A02574D4B70054CA72 /* DataManager.swift in Sources */,
+				14AB5A5E25B6F5FE00795555 /* FavoritesCollectionViewCell.swift in Sources */,
+				143B7DF325B98D1D00CE5BCA /* CoreDataModel.xcdatamodeld in Sources */,
 				1456CD5F2575274E008441DC /* DetailsViewController.swift in Sources */,
 				1431057E256FE6FE0054CA72 /* ViewController.swift in Sources */,
 				143105952572A1190054CA72 /* CollectionViewCell.swift in Sources */,
@@ -375,6 +383,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		143B7DF125B98D1D00CE5BCA /* CoreDataModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				143B7DF225B98D1D00CE5BCA /* CoreDataModel.xcdatamodel */,
+			);
+			currentVersion = 143B7DF225B98D1D00CE5BCA /* CoreDataModel.xcdatamodel */;
+			path = CoreDataModel.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 1431056E256FE6FE0054CA72 /* Project object */;
 }

@@ -6,40 +6,42 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     // API
     var dataManager = DataManager()
-    // api data / trackers
+    // api ata / trackers
     var images: [Result] = []
     var totalCount = 0
     var currentCount = 0
     var page = 1
     var searchInput: String?
     
-    // sets the text of the footer textLabel depending on which case we specify in our collection supplementary view
-    var footerState = StatusLabelText.blank
-    enum StatusLabelText {
+    // handles footer data depending on state (text / activity indicator)
+    enum FooterLabelText {
         case loading
         case endOfResult
         case blank
     }
     
+    var footerState = FooterLabelText.blank
     
-    //MARK: Welcome message configuration
+    // prevent api from triggering when a request is already in progress
+    // will patiently wait for the current request to complete
+    enum PrefetchState {
+        case fetching
+        case idle
+    }
     
-    
-    
-    
-    
-    
-    
+    var prefetchState: PrefetchState = .idle
+
     
     // MARK: DiffableDataSource configuration
-    
     private lazy var diffableDataSource: UICollectionViewDiffableDataSource<Int, Result> = {
+        // cell config
         let dataSource = UICollectionViewDiffableDataSource<Int, Result>(collectionView: collectionView) { collectionView, indexPath, item in
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CollectionViewCell.identifier, for: indexPath) as! CollectionViewCell
             cell.configure(label: self.images[indexPath.row].user.username, image: self.images[indexPath.row].urls.small)
             return cell
         }
-        // footer
+        
+        // footer config
         dataSource.supplementaryViewProvider = { collectionView, kind, indexPath -> UICollectionReusableView? in
             switch kind {
             case UICollectionView.elementKindSectionFooter:
@@ -58,7 +60,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
                     }
                 }
                 
-                // set state of text label in footer
+                // set data of text label in footer depending on state
                 var text: String {
                     switch self.footerState {
                     case .endOfResult:
@@ -79,34 +81,11 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     }()
     
     
-    
-    
-    
     //MARK: API methods & coonfig
-    
-    // prevent fetch from requesting data when a request is already in progress.
-    var prefetchState: PrefetchState = .idle
-    enum PrefetchState {
-        case fetching
-        case idle
-    }
-    
-    private func fetchData(searchTerm: String, page: Int) {
-        if prefetchState == .fetching { return }
-        // set prefetchState to .fetching to prevent fetchData from triggering when a call is already in progress..
-        prefetchState = .fetching
-        // store users search word globally (used when paginating)
-        searchInput = searchTerm
-        // fetch data from API and pass it into our request handler method below this block of code.
-        dataManager.fetch(page: page, searchTerm: searchTerm) { images in
-            self.responseHandler(result: images)
-        }
-        prefetchState = .idle
-    }
-    
+
     // update the collection view cells / footer with our requested data
-    private func update(with items: [Result]) {
-        // compares new data with current data and updates cells/view if any changes were made.
+    func update(with items: [Result]) {
+        // compare new data with any existing data and replace where necessary.
         var snapshot = NSDiffableDataSourceSnapshot<Int, Result>()
         snapshot.appendSections([0])
         snapshot.appendItems(images, toSection: 0)
@@ -115,8 +94,9 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     
     // handle the data that we get from the fetchData method.
-    private func responseHandler(result: Images) {
+    func responseHandler(result: Images) {
         if result.results.isEmpty {
+            // state to tell our footer view to display information about our search result depending on the response from the server.
             footerState = .endOfResult
             update(with: images)
         }
@@ -132,68 +112,35 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         
     }
     
-    
+
+    func fetchData(searchTerm: String, page: Int) {
+        if prefetchState == .fetching { return }
+        // set prefetchState to .fetching to prevent fetchData from triggering when a call is already in progress..
+        prefetchState = .fetching
+        // store users search word globally (used when paginating)
+        searchInput = searchTerm
+        // fetch data from API and pass it into our request handler method below this block of code.
+        dataManager.fetch(page: page, searchTerm: searchTerm) { images in
+            self.responseHandler(result: images)
+        }
+        prefetchState = .idle
+    }
     
     
     // MARK: Collection view configuration
-    
-    let flowLayout: UICollectionViewFlowLayout = {
-        let layout = UICollectionViewFlowLayout()
-        layout.minimumInteritemSpacing = 5
-        layout.minimumLineSpacing = 5
-        layout.sectionInset = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        return layout
-    }()
-    
-    
-    
     private lazy var collectionView: UICollectionView = {
-//        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-//                                              heightDimension: .fractionalHeight(1.0))
-//
-//        let item = NSCollectionLayoutItem(layoutSize: itemSize)
-//        item.contentInsets = NSDirectionalEdgeInsets(top: 5,
-//                                                     leading: 5,
-//                                                     bottom: 5,
-//                                                     trailing: 5)
-//
-//        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-//                                               heightDimension: .fractionalHeight(0.25))
-//        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize,
-//                                                       subitem: item,
-//                                                       count: 2)
-//        let section = NSCollectionLayoutSection(group: group)
-//        let layout = UICollectionViewCompositionalLayout(section: section)
-      
-        
-//        let layout = UICollectionViewFlowLayout()
-//        layout.itemSize = CGSize(width: 200, height: 200)
-//        layout.footerReferenceSize = CGSize(width: 0, height: 60)
-        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1/3), heightDimension: .fractionalHeight(1))
+        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1/2), heightDimension: .fractionalHeight(1))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        
-        let widthDimension = NSCollectionLayoutDimension.fractionalWidth(1)
-        let heightDimension = NSCollectionLayoutDimension.fractionalWidth(1/3)
-
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalWidth(1/3))
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalWidth(1/2))
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-        
         let headerFooterSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
                                                      heightDimension: .estimated(44))
-        
         let sectionFooter = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerFooterSize,
                                                                        elementKind: UICollectionView.elementKindSectionFooter,
                                                                          alignment: .bottom)
-
         let section = NSCollectionLayoutSection(group: group)
         section.boundarySupplementaryItems = [sectionFooter]
         let layout = UICollectionViewCompositionalLayout(section: section)
-        
-       
-
-           
-        
-        
         let collectionView = UICollectionView(frame: .zero,
                                               collectionViewLayout: layout)
         collectionView.register(CollectionViewCell.self,
@@ -204,15 +151,12 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         return collectionView
     }()
     
-    // Let's user navigate to a new page with more information on the image clicked
+    // Let's user navigate to a new page with more information when a cell is clicked.
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
         let view = mainStoryboard.instantiateViewController(identifier: "DetailsViewController") as! DetailsViewController
         let image = images[indexPath.row]
-        view.configure(user: image.user.username,
-                       image: image.urls.regular,
-                       date: image.created_at,
-                       description: image.description ?? "no description available")
+        view.configure(data: image)
         self.navigationController?.pushViewController(view, animated: true)
     }
     
@@ -221,45 +165,45 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         if let input = searchInput,
            currentCount > 0,
            page > 1,
+           // call API when user reaches the of the currently displayed images.
            indexPath.row == images.count - 1 {
             fetchData(searchTerm: input, page: page)
         }
     }
     
     
-    
-    
     //MARK: Search bar configuration
     var searchController = UISearchController()
-    private func resetDataForNewSearch() {
+
+    // purge any existing data when performing a new search
+    func purgeData() {
         images = []
         currentCount = 0
         totalCount = 0
         page = 1
     }
     
+    // trigger search when search button is clicked
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        resetDataForNewSearch()
-        
+        purgeData()
         if let input = self.searchController.searchBar.text {
             title = "Searching for: \(input)"
             let inputConcat = input.replacingOccurrences(of: " ", with: "+")
+            // call api w/ queries
             fetchData(searchTerm: inputConcat, page: page)
         }
+        // dismiss search bar when a new search is triggered
         searchController.isActive = false
     }
     
     
     // MARK: viewdidload / appear
-    
     override func loadView() {
         view = collectionView
     }
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         collectionView.alwaysBounceVertical = true
         collectionView.backgroundColor = .systemBackground
         collectionView.dataSource = diffableDataSource
@@ -267,9 +211,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         searchController.searchBar.placeholder = "Search.."
         searchController.searchBar.delegate = self
         navigationItem.searchController = searchController
-        
     }
-    
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)

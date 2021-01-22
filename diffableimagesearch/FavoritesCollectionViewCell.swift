@@ -1,13 +1,13 @@
 //
-//  CollectionViewCell.swift
+//  FavoritesCollectionViewCell.swift
 //  diffableimagesearch
 //
-//  Created by Joakim Hellgren on 2020-11-28.
+//  Created by Joakim Hellgren on 2021-01-19.
 //
 
 import UIKit
 
-class CollectionViewCell: UICollectionViewCell {
+class FavoritesCollectionViewCell: UICollectionViewCell {
     
     static let identifier = "cell"
     private var myLabel: UILabel = {
@@ -76,5 +76,4 @@ class CollectionViewCell: UICollectionViewCell {
             self.transform = self.isHighlighted ? CGAffineTransform.identity.scaledBy(x: 0.97, y: 0.97) : CGAffineTransform.identity
         })
     }
-    
 }

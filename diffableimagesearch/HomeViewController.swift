@@ -5,9 +5,10 @@
 //  Created by Joakim Hellgren on 2021-01-14.
 //
 
+import CoreData
 import UIKit
 
-class HomeViewController: UIViewController {
+class HomeViewController: UIViewController, UICollectionViewDelegate {
     
     @IBOutlet var scrollView: UIScrollView!
     
@@ -15,6 +16,9 @@ class HomeViewController: UIViewController {
     let isUserLoggedIn: Bool = false
     var user: String?
     
+    
+    
+
     private var showPopupMessage = true
     private let popupBackgroundView: UIView = {
         let popupBackgroundView = UIView()
@@ -161,8 +165,7 @@ class HomeViewController: UIViewController {
         tabBarController?.tabBar.isHidden = false
     }
     
-    
-    
+
     private let userView: UIView = {
         let userView = UIView()
         userView.layer.masksToBounds = true
@@ -170,30 +173,35 @@ class HomeViewController: UIViewController {
         userView.alpha = 0
         return userView
     }()
+
+    private let favoritesView: UIView = {
+        let favoritesView = UIView()
+        favoritesView.layer.masksToBounds = true
+        favoritesView.layer.cornerRadius = 12
+        favoritesView.alpha = 0
+        favoritesView.backgroundColor = .systemFill
+        return favoritesView
+    }()
     
     
     func addUserView(with username: String, on viewController: HomeViewController) {
-        userView.frame = CGRect(x: 16,
-                                y: 0,
-                                width: view.frame.width,
-                                height: view.frame.height - 32)
-        userView.center = CGPoint(x: view.center.x,
-                                  y: view.center.y)
-
+        
+        userView.frame = CGRect(x: 16, y: 0, width: view.frame.width, height: view.frame.height - 32)
+        userView.center = CGPoint(x: view.center.x, y: view.center.y)
         view.addSubview(userView)
         
-        let usernameLabel = UILabel(frame: CGRect(x: 16,
-                                                  y: 16,
-                                                  width: view.frame.size.width - 32,
-                                                  height: 54))
+        let usernameLabel = UILabel(frame: CGRect(x: 16, y: 16, width: view.frame.size.width - 32, height: 54))
         usernameLabel.text = "Welcome back, \(username)"
-        usernameLabel.font = .preferredFont(forTextStyle:  .title1)
-        usernameLabel.textAlignment = .center
-        
+        usernameLabel.font = .preferredFont(forTextStyle:  .title2)
+        usernameLabel.textAlignment = .left
         userView.addSubview(usernameLabel)
+        
+        favoritesView.frame = CGRect(x: 16, y: 128, width: userView.frame.width - 32, height: userView.frame.width - 32)
+        userView.addSubview(favoritesView)
         
         UIView.animate(withDuration: 0.25, animations: {
             self.userView.alpha = 1
+            self.favoritesView.alpha = 1
         })
     }
     
@@ -210,12 +218,47 @@ class HomeViewController: UIViewController {
     }
     
 
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         navigationController?.setNavigationBarHidden(true, animated: true)
-
+        
     }
+    
+    
+    // var favs = DetailsViewController()
+    
+    
+    var favorites: [NSManagedObject] = []
+    
+    override func viewWillAppear(_ animated: Bool) {
+      super.viewWillAppear(animated)
+      
+      //1
+      guard let appDelegate =
+        UIApplication.shared.delegate as? AppDelegate else {
+          return
+      }
+      
+      let managedContext =
+        appDelegate.persistentContainer.viewContext
+      
+      //2
+      let fetchRequest =
+        NSFetchRequest<NSManagedObject>(entityName: "Favorite")
+        fetchRequest.returnsObjectsAsFaults = false
+      //3
+      do {
+        favorites = try managedContext.fetch(fetchRequest)
+        
+        print(favorites[0])
+      } catch let error as NSError {
+        print("Could not fetch. \(error), \(error.userInfo)")
+      }
+    }
+
+    
     
     override func viewDidAppear(_ animated: Bool) {
         if showPopupMessage == true {
@@ -230,7 +273,9 @@ class HomeViewController: UIViewController {
             }
             showPopupMessage = false
         }
+        
     }
+
 
 
 }
