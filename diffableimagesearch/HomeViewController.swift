@@ -287,7 +287,6 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        print("HELLO")
         //1
         let persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
         let fav = favorites[indexPath.row]
@@ -330,50 +329,3 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
     }
 }
 
-
-
-/*
- override func viewWillAppear(_ animated: Bool) {
- super.viewWillAppear(animated)
- 
- //1
- guard let appDelegate =
- UIApplication.shared.delegate as? AppDelegate else {
- return
- }
- 
- let managedContext =
- appDelegate.persistentContainer.viewContext
- 
- //2
- let fetchRequest =
- NSFetchRequest<NSFetchRequestResult>(entityName: "Favorite")
- //        fetchRequest.returnsObjectsAsFaults = false
- let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
- let persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
- //3
- do {
- try persistentContainer.viewContext.execute(deleteRequest)
- 
- print(favorites)
- 
- } catch let error as NSError {
- print("Could not fetch. \(error), \(error.userInfo)")
- }
- }
- 
- 
- 
- 
- for item in favorites {
- 
- dataArray.append(String(describing: item.committedValues(forKeys: ["user"]).values))
- imgArray.append(String(describing: item.committedValues(forKeys: ["image"]).values))
- }
- //dataArray = Array(favorites)
- 
- 
- 
- 
- 
- */
