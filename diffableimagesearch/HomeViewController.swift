@@ -12,13 +12,12 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
     
     @IBOutlet var scrollView: UIScrollView!
     
-    
     let isUserLoggedIn: Bool = false
     var user: String?
     
+    // Core Data
+    var favorites: [Favorite] = []
     
-    
-
     private var showPopupMessage = true
     private let popupBackgroundView: UIView = {
         let popupBackgroundView = UIView()
@@ -161,11 +160,59 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
                 })
             }
         })
-
+        
         tabBarController?.tabBar.isHidden = false
     }
     
-
+    // MARK: Collection view configuration
+    private lazy var collectionView: UICollectionView = {
+        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1/2), heightDimension: .fractionalHeight(1))
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalWidth(1/2))
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+        let section = NSCollectionLayoutSection(group: group)
+        let layout = UICollectionViewCompositionalLayout(section: section)
+        let collectionView = UICollectionView(frame: .zero,
+                                              collectionViewLayout: layout)
+        collectionView.alpha = 0
+        collectionView.backgroundColor = .systemBackground
+        collectionView.register(FavoritesCollectionViewCell.self,
+                                forCellWithReuseIdentifier: FavoritesCollectionViewCell.identifier)
+        return collectionView
+    }()
+    
+    
+    //MARK: DiffableDataSource configuration
+    private lazy var diffableDataSource: UICollectionViewDiffableDataSource<Int, Favorite> = {
+        // cell config
+        let dataSource = UICollectionViewDiffableDataSource<Int, Favorite>(collectionView: collectionView) { collectionView, indexPath, item in
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FavoritesCollectionViewCell.identifier, for: indexPath) as! FavoritesCollectionViewCell
+            let username = self.favorites[indexPath.row].value(forKey: "user") as? String
+            let imageUrl = self.favorites[indexPath.row].value(forKey: "image") as? String
+            if let safeUsername = username,
+               let safeImageUrl = imageUrl {
+                cell.configure(label: safeUsername, image: safeImageUrl)
+            } else {
+                let errorLabel = "error getting user"
+                let errorImg = "https://cdn.shopify.com/s/files/1/0533/2089/files/placeholder-images-image_large.png?format=jpg&quality=90&v=1530129081"
+                cell.configure(label: errorLabel, image: errorImg)
+            }
+            return cell
+        }
+        return dataSource
+    }()
+    
+    
+    
+    func update(with items: [Favorite]) {
+        // compare new data with any existing data and replace where necessary.
+        var snapshot = NSDiffableDataSourceSnapshot<Int, Favorite>()
+        snapshot.appendSections([0])
+        snapshot.appendItems(favorites, toSection: 0)
+        diffableDataSource.apply(snapshot, animatingDifferences: true)
+    }
+    
+    
     private let userView: UIView = {
         let userView = UIView()
         userView.layer.masksToBounds = true
@@ -173,7 +220,7 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         userView.alpha = 0
         return userView
     }()
-
+    
     private let favoritesView: UIView = {
         let favoritesView = UIView()
         favoritesView.layer.masksToBounds = true
@@ -196,12 +243,12 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         usernameLabel.textAlignment = .left
         userView.addSubview(usernameLabel)
         
-        favoritesView.frame = CGRect(x: 16, y: 128, width: userView.frame.width - 32, height: userView.frame.width - 32)
-        userView.addSubview(favoritesView)
+        collectionView.frame = CGRect(x: 16, y: 128, width: userView.frame.width - 32, height: userView.frame.height - 32)
+        userView.addSubview(collectionView)
         
         UIView.animate(withDuration: 0.25, animations: {
             self.userView.alpha = 1
-            self.favoritesView.alpha = 1
+            self.collectionView.alpha = 1
         })
     }
     
@@ -217,47 +264,56 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         })
     }
     
-
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        //resetCoreData()
         view.backgroundColor = .systemBackground
         navigationController?.setNavigationBarHidden(true, animated: true)
-        
+        collectionView.delegate = self
     }
-    
-    
-    // var favs = DetailsViewController()
-    
-    
-    var favorites: [NSManagedObject] = []
     
     override func viewWillAppear(_ animated: Bool) {
-      super.viewWillAppear(animated)
-      
-      //1
-      guard let appDelegate =
-        UIApplication.shared.delegate as? AppDelegate else {
-          return
-      }
-      
-      let managedContext =
-        appDelegate.persistentContainer.viewContext
-      
-      //2
-      let fetchRequest =
-        NSFetchRequest<NSManagedObject>(entityName: "Favorite")
-        fetchRequest.returnsObjectsAsFaults = false
-      //3
-      do {
-        favorites = try managedContext.fetch(fetchRequest)
-        
-        print(favorites[0])
-      } catch let error as NSError {
-        print("Could not fetch. \(error), \(error.userInfo)")
-      }
+        super.viewWillAppear(animated)
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let managedContext = appDelegate.persistentContainer.viewContext
+        let fetchRequest = NSFetchRequest<Favorite>(entityName: "Favorite")
+        do {
+            favorites = try managedContext.fetch(fetchRequest)
+            update(with: favorites)
+        } catch let error as NSError {
+            print("Could not fetch. \(error), \(error.userInfo)")
+        }
     }
-
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        print("HELLO")
+        //1
+        let persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
+        let fav = favorites[indexPath.row]
+        do {
+            persistentContainer.viewContext.delete(fav)
+            try persistentContainer.viewContext.save()
+            favorites.remove(at: indexPath.row)
+            update(with: favorites)
+        } catch let error as NSError {
+            print("Could not fetch. \(error), \(error.userInfo)")
+        }
+    }
+    
+    // method unsused,  but useful for purging during development.
+    func resetCoreData() {
+        let fetchRequest =
+        NSFetchRequest<NSFetchRequestResult>(entityName: "Favorite")
+        // fetchRequest.returnsObjectsAsFaults = false
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        let persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
+        do {
+        try persistentContainer.viewContext.execute(deleteRequest)
+        } catch let error as NSError {
+        print("Could not fetch. \(error), \(error.userInfo)")
+        }
+    }
     
     
     override func viewDidAppear(_ animated: Bool) {
@@ -265,17 +321,59 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
             tabBarController?.tabBar.isHidden = true
             switch isUserLoggedIn {
             case false:
-                showPopup(with: "Hello, stranger.",
-                          message: "log in to continue.",
-                          on: self)
+                showPopup(with: "Hello, stranger.", message: "log in to continue.", on: self)
             case true:
                 return
             }
             showPopupMessage = false
         }
-        
     }
-
-
-
 }
+
+
+
+/*
+ override func viewWillAppear(_ animated: Bool) {
+ super.viewWillAppear(animated)
+ 
+ //1
+ guard let appDelegate =
+ UIApplication.shared.delegate as? AppDelegate else {
+ return
+ }
+ 
+ let managedContext =
+ appDelegate.persistentContainer.viewContext
+ 
+ //2
+ let fetchRequest =
+ NSFetchRequest<NSFetchRequestResult>(entityName: "Favorite")
+ //        fetchRequest.returnsObjectsAsFaults = false
+ let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+ let persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
+ //3
+ do {
+ try persistentContainer.viewContext.execute(deleteRequest)
+ 
+ print(favorites)
+ 
+ } catch let error as NSError {
+ print("Could not fetch. \(error), \(error.userInfo)")
+ }
+ }
+ 
+ 
+ 
+ 
+ for item in favorites {
+ 
+ dataArray.append(String(describing: item.committedValues(forKeys: ["user"]).values))
+ imgArray.append(String(describing: item.committedValues(forKeys: ["image"]).values))
+ }
+ //dataArray = Array(favorites)
+ 
+ 
+ 
+ 
+ 
+ */

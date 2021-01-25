@@ -10,13 +10,15 @@ import UIKit
 
 class DetailsViewController: UIViewController {
     
-    public var favorites: [NSManagedObject] = []
+    public var favorites: [Favorite] = []
     
     func save(user: String, image: String, date: String, description: String) {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         let managedContext = appDelegate.persistentContainer.viewContext
         let entity = NSEntityDescription.entity(forEntityName: "Favorite", in: managedContext)!
-        let favorite = NSManagedObject(entity: entity, insertInto: managedContext)
+        let favorite = Favorite(entity: entity, insertInto: managedContext)
+        let id = UUID()
+        favorite.setValue(id, forKey: "id")
         favorite.setValue(user, forKey: "user")
         favorite.setValue(image, forKey: "image")
         favorite.setValue(date, forKey: "date")

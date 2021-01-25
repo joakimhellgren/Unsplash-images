@@ -51,9 +51,11 @@ class FavoritesCollectionViewCell: UICollectionViewCell {
         myImageView.frame = CGRect(x: 8, y: 0, width: contentView.frame.size.width - 16, height: contentView.frame.size.height - 50)
     }
     
-    public func configure(label: String, image: URL) {
+    public func configure(label: String, image: String) {
         myLabel.text = label
-        myImageView.loadImage(from: image)
+       
+        guard let url = URL(string: image) else { return }
+        myImageView.loadImage(from: url)
     }
     
     override func prepareForReuse() {
@@ -63,17 +65,5 @@ class FavoritesCollectionViewCell: UICollectionViewCell {
         myImageView.alpha = 1
     }
     
-    // feedback animation when user taps on a cell
-    override var isHighlighted: Bool {
-        didSet {
-            toggleIsHighlighted()
-        }
-    }
-    
-    func toggleIsHighlighted() {
-        UIView.animate(withDuration: 0.1, delay: 0, options: [.curveEaseOut], animations: {
-            self.alpha = self.isHighlighted ? 0.9 : 1.0
-            self.transform = self.isHighlighted ? CGAffineTransform.identity.scaledBy(x: 0.97, y: 0.97) : CGAffineTransform.identity
-        })
-    }
+ 
 }
