@@ -10,8 +10,10 @@ import UIKit
 
 class DetailsViewController: UIViewController {
     
+    // Core Data Model
     public var favorites: [Favorite] = []
     
+    // save image data to favorites with Core Data
     func save(user: String, image: String, date: String, description: String) {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         let managedContext = appDelegate.persistentContainer.viewContext

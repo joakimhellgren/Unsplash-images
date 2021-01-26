@@ -15,7 +15,7 @@ class DataManager {
             let session = URLSession(configuration: .default)
             let task = session.dataTask(with: url) { (data, response, error) in
                 if error != nil {
-                    print(error!)
+                    print(error.debugDescription)
                     return
                 }
                 if let safeData = data {
@@ -26,7 +26,7 @@ class DataManager {
                             callback(decodedData)
                         }
                     } catch {
-                        print(error)
+                        print(error.localizedDescription)
                     }
                 }
             }

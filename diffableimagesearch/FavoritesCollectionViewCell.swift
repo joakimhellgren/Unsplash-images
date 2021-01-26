@@ -10,22 +10,33 @@ import UIKit
 class FavoritesCollectionViewCell: UICollectionViewCell {
     
     static let identifier = "cell"
+    
     private var myLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
         return label
     }()
+    
     private var myImageView: CustomImageView = {
         let imageView = CustomImageView()
-        
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.layer.masksToBounds = true
-        imageView.layer.cornerRadius = 4
-        
+        imageView.layer.cornerRadius = 6
         imageView.alpha = 1
         return imageView
     }()
+    
+    public func configure(label: String?, image: String?) {
+        myLabel.text = label
+        guard let safeImage = image else {
+            return myImageView.image = UIImage(systemName: "icloud.slash")
+        }
+        guard let url = URL(string: safeImage) else {
+            return
+        }
+        myImageView.loadImage(from: url)
+    }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -51,19 +62,10 @@ class FavoritesCollectionViewCell: UICollectionViewCell {
         myImageView.frame = CGRect(x: 8, y: 0, width: contentView.frame.size.width - 16, height: contentView.frame.size.height - 50)
     }
     
-    public func configure(label: String, image: String) {
-        myLabel.text = label
-       
-        guard let url = URL(string: image) else { return }
-        myImageView.loadImage(from: url)
-    }
-    
     override func prepareForReuse() {
         super.prepareForReuse()
         myLabel.text = nil
         myImageView.image = nil
         myImageView.alpha = 1
     }
-    
- 
 }

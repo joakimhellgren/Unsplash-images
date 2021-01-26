@@ -18,7 +18,7 @@ class CustomImageView: UIImageView {
         // to indicate that something is loading
         DispatchQueue.main.async {
             UIView.animate(withDuration: 0.5) {
-                self.backgroundColor = .darkGray
+                self.backgroundColor = .secondarySystemFill
             }
         }
         
@@ -36,13 +36,12 @@ class CustomImageView: UIImageView {
         
         task = URLSession.shared.dataTask(with: url) { ( data, response, error) in
             guard let data = data, let newImage = UIImage(data: data) else {
-                //print("couldn't load image from url: \(url)")
                 return
             }
             
             // cache DL'ed image.
             imageCache.setObject(newImage, forKey: url.absoluteString as AnyObject)
-            
+    
             DispatchQueue.main.async {
                 UIView.animate(withDuration: 0.5) {
                     self.image = newImage

@@ -75,14 +75,11 @@ class LoginViewController: UIViewController, UISearchBarDelegate {
                               y: passwordField.frame.origin.y + passwordField.frame.size.height + 10,
                               width: view.frame.size.width - 40,
                               height: 80)
-        
     }
     
     @objc private func didTapButton() {
-        print("Continue button tapped")
         let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
         let view = mainStoryboard.instantiateViewController(identifier: "ViewController") as! ViewController
-        
         self.navigationController?.pushViewController(view, animated: true)
     }
 

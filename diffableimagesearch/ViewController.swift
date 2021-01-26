@@ -6,20 +6,62 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     // API
     var dataManager = DataManager()
-    // api ata / trackers
+    // parameters / trackers
     var images: [Result] = []
     var totalCount = 0
     var currentCount = 0
     var page = 1
     var searchInput: String?
     
-    // handles footer data depending on state (text / activity indicator)
+    
+    //MARK: - API methods & config
+    func update(with items: [Result]) {
+        // compare new data with any existing data in diffable data source and update any changes.
+        var snapshot = NSDiffableDataSourceSnapshot<Int, Result>()
+        snapshot.appendSections([0])
+        snapshot.appendItems(images, toSection: 0)
+        diffableDataSource.apply(snapshot, animatingDifferences: true)
+    }
+    
+    
+    // handle the data that we get from the fetchData method.
+    func responseHandler(result: Images) {
+        if result.results.isEmpty {
+            // state to tell our footer view to display information about our search result depending on the response from the server.
+            footerState = .endOfResult
+            update(with: images)
+        }
+        else {
+            images.append(contentsOf: result.results)
+            currentCount += result.results.count
+            totalCount = result.total
+            page += 1
+            footerState = .loading
+            if currentCount == totalCount { footerState = .endOfResult }
+            update(with: images)
+        }
+    }
+    
+    func fetchData(searchTerm: String, page: Int) {
+        if prefetchState == .fetching { return }
+        // set prefetchState to .fetching to prevent fetchData from triggering when a call is already in progress..
+        prefetchState = .fetching
+        // store users search word globally (used when paginating)
+        searchInput = searchTerm
+        // fetch data from API and pass it into our request handler method below this block of code.
+        dataManager.fetch(page: page, searchTerm: searchTerm) { images in
+            self.responseHandler(result: images)
+        }
+        prefetchState = .idle
+    }
+    
+    // MARK: State handlers
+    // handles data in footer depending on state (text / activity indicator)
     enum FooterLabelText {
         case loading
         case endOfResult
         case blank
     }
-    
     var footerState = FooterLabelText.blank
     
     // prevent api from triggering when a request is already in progress
@@ -28,11 +70,10 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         case fetching
         case idle
     }
-    
     var prefetchState: PrefetchState = .idle
-
     
-    // MARK: DiffableDataSource configuration
+    
+    // MARK: - DiffableDataSource configuration
     private lazy var diffableDataSource: UICollectionViewDiffableDataSource<Int, Result> = {
         // cell config
         let dataSource = UICollectionViewDiffableDataSource<Int, Result>(collectionView: collectionView) { collectionView, indexPath, item in
@@ -81,53 +122,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     }()
     
     
-    //MARK: API methods & coonfig
-
-    // update the collection view cells / footer with our requested data
-    func update(with items: [Result]) {
-        // compare new data with any existing data and replace where necessary.
-        var snapshot = NSDiffableDataSourceSnapshot<Int, Result>()
-        snapshot.appendSections([0])
-        snapshot.appendItems(images, toSection: 0)
-        diffableDataSource.apply(snapshot, animatingDifferences: true)
-    }
-    
-    
-    // handle the data that we get from the fetchData method.
-    func responseHandler(result: Images) {
-        if result.results.isEmpty {
-            // state to tell our footer view to display information about our search result depending on the response from the server.
-            footerState = .endOfResult
-            update(with: images)
-        }
-        else {
-            images.append(contentsOf: result.results)
-            currentCount += result.results.count
-            totalCount = result.total
-            page += 1
-            footerState = .loading
-            if currentCount == totalCount { footerState = .endOfResult }
-            update(with: images)
-        }
-        
-    }
-    
-
-    func fetchData(searchTerm: String, page: Int) {
-        if prefetchState == .fetching { return }
-        // set prefetchState to .fetching to prevent fetchData from triggering when a call is already in progress..
-        prefetchState = .fetching
-        // store users search word globally (used when paginating)
-        searchInput = searchTerm
-        // fetch data from API and pass it into our request handler method below this block of code.
-        dataManager.fetch(page: page, searchTerm: searchTerm) { images in
-            self.responseHandler(result: images)
-        }
-        prefetchState = .idle
-    }
-    
-    
-    // MARK: Collection view configuration
+    // MARK: - Collection view configuration
     private lazy var collectionView: UICollectionView = {
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1/2), heightDimension: .fractionalHeight(1))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
@@ -172,7 +167,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     }
     
     
-    //MARK: Search bar configuration
+    //MARK: - Search bar configuration
     var searchController = UISearchController()
 
     // purge any existing data when performing a new search
@@ -197,7 +192,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     }
     
     
-    // MARK: viewdidload / appear
+    // MARK: - et al
     override func loadView() {
         view = collectionView
     }

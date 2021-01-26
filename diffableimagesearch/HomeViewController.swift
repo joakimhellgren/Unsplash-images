@@ -12,13 +12,75 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
     
     @IBOutlet var scrollView: UIScrollView!
     
-    let isUserLoggedIn: Bool = false
-    var user: String?
-    
     // Core Data
     var favorites: [Favorite] = []
     
-    private var showPopupMessage = true
+    //MARK: - collection view diffable data source configuration
+    private lazy var diffableDataSource: UICollectionViewDiffableDataSource<Int, Favorite> = {
+        // cell config
+        let dataSource = UICollectionViewDiffableDataSource<Int, Favorite>(collectionView: collectionView) { collectionView, indexPath, item in
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FavoritesCollectionViewCell.identifier, for: indexPath) as? FavoritesCollectionViewCell else {
+                return UICollectionViewCell()
+            }
+            let username = self.favorites[indexPath.row].value(forKey: "user") as? String
+            let imageUrl = self.favorites[indexPath.row].value(forKey: "image") as? String
+            cell.configure(label: username, image: imageUrl)
+            return cell
+        }
+        return dataSource
+    }()
+    
+    
+    func update(with items: [Favorite]) {
+        // compare new data with any existing data in diff data source and update any changes.
+        var snapshot = NSDiffableDataSourceSnapshot<Int, Favorite>()
+        snapshot.appendSections([0])
+        snapshot.appendItems(favorites, toSection: 0)
+        diffableDataSource.apply(snapshot, animatingDifferences: true)
+    }
+    
+    // MARK: - Collection view configuration
+    private lazy var collectionView: UICollectionView = {
+        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1/3), heightDimension: .fractionalHeight(1))
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalWidth(1/2))
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+        let section = NSCollectionLayoutSection(group: group)
+        section.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
+        let layout = UICollectionViewCompositionalLayout(section: section)
+        let collectionView = UICollectionView(frame: .zero,
+                                              collectionViewLayout: layout)
+        collectionView.alpha = 0
+        collectionView.backgroundColor = .secondarySystemBackground
+        
+        collectionView.layer.cornerRadius = 12
+        collectionView.showsVerticalScrollIndicator = false
+        collectionView.register(FavoritesCollectionViewCell.self,
+                                forCellWithReuseIdentifier: FavoritesCollectionViewCell.identifier)
+        return collectionView
+    }()
+    
+    
+    // tapping a cell in the collection view removes it from our Diff data source + core data
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
+        let fav = favorites[indexPath.row]
+        do {
+            persistentContainer.viewContext.delete(fav)
+            try persistentContainer.viewContext.save()
+            favorites.remove(at: indexPath.row)
+            update(with: favorites)
+        } catch let error as NSError {
+            print("Could not save changes. \(error), \(error.userInfo)")
+        }
+    }
+    
+    
+    // MARK: - Screen states
+    var user: String?
+    var showPopupMessage = true
+    var isUserLoggedIn = false
+    
     private let popupBackgroundView: UIView = {
         let popupBackgroundView = UIView()
         popupBackgroundView.alpha = 0
@@ -137,7 +199,6 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
             self.popupBackgroundView.alpha = 1
             self.popupView.alpha = 1
         })
-        
     }
     
     func dismissPopup() {
@@ -153,121 +214,40 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
                         self.popupBackgroundView.removeFromSuperview()
                         self.scrollView.bounces = true
                         self.addUserView(with: "Joakim", on: self)
+                        self.isUserLoggedIn = true
                         UIView.animate(withDuration: 0.25, animations: {
                             self.navigationController?.navigationBar.alpha = 1
+                            self.tabBarController?.tabBar.isHidden = false
                         })
                     }
                 })
             }
         })
-        
-        tabBarController?.tabBar.isHidden = false
     }
-    
-    // MARK: Collection view configuration
-    private lazy var collectionView: UICollectionView = {
-        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1/2), heightDimension: .fractionalHeight(1))
-        let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalWidth(1/2))
-        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-        let section = NSCollectionLayoutSection(group: group)
-        let layout = UICollectionViewCompositionalLayout(section: section)
-        let collectionView = UICollectionView(frame: .zero,
-                                              collectionViewLayout: layout)
-        collectionView.alpha = 0
-        collectionView.backgroundColor = .systemBackground
-        collectionView.register(FavoritesCollectionViewCell.self,
-                                forCellWithReuseIdentifier: FavoritesCollectionViewCell.identifier)
-        return collectionView
-    }()
-    
-    
-    //MARK: DiffableDataSource configuration
-    private lazy var diffableDataSource: UICollectionViewDiffableDataSource<Int, Favorite> = {
-        // cell config
-        let dataSource = UICollectionViewDiffableDataSource<Int, Favorite>(collectionView: collectionView) { collectionView, indexPath, item in
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FavoritesCollectionViewCell.identifier, for: indexPath) as! FavoritesCollectionViewCell
-            let username = self.favorites[indexPath.row].value(forKey: "user") as? String
-            let imageUrl = self.favorites[indexPath.row].value(forKey: "image") as? String
-            if let safeUsername = username,
-               let safeImageUrl = imageUrl {
-                cell.configure(label: safeUsername, image: safeImageUrl)
-            } else {
-                let errorLabel = "error getting user"
-                let errorImg = "https://cdn.shopify.com/s/files/1/0533/2089/files/placeholder-images-image_large.png?format=jpg&quality=90&v=1530129081"
-                cell.configure(label: errorLabel, image: errorImg)
-            }
-            return cell
-        }
-        return dataSource
-    }()
-    
-    
-    
-    func update(with items: [Favorite]) {
-        // compare new data with any existing data and replace where necessary.
-        var snapshot = NSDiffableDataSourceSnapshot<Int, Favorite>()
-        snapshot.appendSections([0])
-        snapshot.appendItems(favorites, toSection: 0)
-        diffableDataSource.apply(snapshot, animatingDifferences: true)
-    }
-    
-    
-    private let userView: UIView = {
-        let userView = UIView()
-        userView.layer.masksToBounds = true
-        userView.layer.cornerRadius = 12
-        userView.alpha = 0
-        return userView
-    }()
-    
-    private let favoritesView: UIView = {
-        let favoritesView = UIView()
-        favoritesView.layer.masksToBounds = true
-        favoritesView.layer.cornerRadius = 12
-        favoritesView.alpha = 0
-        favoritesView.backgroundColor = .systemFill
-        return favoritesView
-    }()
     
     
     func addUserView(with username: String, on viewController: HomeViewController) {
         
-        userView.frame = CGRect(x: 16, y: 0, width: view.frame.width, height: view.frame.height - 32)
-        userView.center = CGPoint(x: view.center.x, y: view.center.y)
-        view.addSubview(userView)
-        
+        // add a text that welcomes the user with their user name
         let usernameLabel = UILabel(frame: CGRect(x: 16, y: 16, width: view.frame.size.width - 32, height: 54))
         usernameLabel.text = "Welcome back, \(username)"
-        usernameLabel.font = .preferredFont(forTextStyle:  .title2)
-        usernameLabel.textAlignment = .left
-        userView.addSubview(usernameLabel)
+        usernameLabel.font = .preferredFont(forTextStyle:  .title1)
+        usernameLabel.textAlignment = .center
+        view.addSubview(usernameLabel)
         
-        collectionView.frame = CGRect(x: 16, y: 128, width: userView.frame.width - 32, height: userView.frame.height - 32)
-        userView.addSubview(collectionView)
+        collectionView.frame = CGRect(x: 16, y: 128, width: view.frame.width - 32, height: view.frame.width - 32)
+        view.addSubview(collectionView)
         
         UIView.animate(withDuration: 0.25, animations: {
-            self.userView.alpha = 1
             self.collectionView.alpha = 1
         })
     }
     
-    
-    // this method is unused, but remains here for future implementation
-    func dismissUserView() {
-        UIView.animate(withDuration: 0.25, animations: {
-            self.userView.alpha = 0
-        }, completion: { done in
-            if done {
-                self.userView.removeFromSuperview()
-            }
-        })
-    }
+    //MARK: - et al
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        //resetCoreData()
         view.backgroundColor = .systemBackground
         navigationController?.setNavigationBarHidden(true, animated: true)
         collectionView.delegate = self
@@ -275,6 +255,7 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        // retrieve Core Data data and update diff data source with Core Data data
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         let managedContext = appDelegate.persistentContainer.viewContext
         let fetchRequest = NSFetchRequest<Favorite>(entityName: "Favorite")
@@ -286,45 +267,14 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         }
     }
     
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        //1
-        let persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
-        let fav = favorites[indexPath.row]
-        do {
-            persistentContainer.viewContext.delete(fav)
-            try persistentContainer.viewContext.save()
-            favorites.remove(at: indexPath.row)
-            update(with: favorites)
-        } catch let error as NSError {
-            print("Could not fetch. \(error), \(error.userInfo)")
-        }
-    }
-    
-    // method unsused,  but useful for purging during development.
-    func resetCoreData() {
-        let fetchRequest =
-        NSFetchRequest<NSFetchRequestResult>(entityName: "Favorite")
-        // fetchRequest.returnsObjectsAsFaults = false
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-        let persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
-        do {
-        try persistentContainer.viewContext.execute(deleteRequest)
-        } catch let error as NSError {
-        print("Could not fetch. \(error), \(error.userInfo)")
-        }
-    }
-    
-    
     override func viewDidAppear(_ animated: Bool) {
-        if showPopupMessage == true {
+        // check if user is logged in or not (placeholder implementation for now)
+        switch isUserLoggedIn {
+        case false:
             tabBarController?.tabBar.isHidden = true
-            switch isUserLoggedIn {
-            case false:
-                showPopup(with: "Hello, stranger.", message: "log in to continue.", on: self)
-            case true:
-                return
-            }
-            showPopupMessage = false
+            showPopup(with: "Hello, stranger.", message: "log in to continue.", on: self)
+        case true:
+            tabBarController?.tabBar.isHidden = false
         }
     }
 }
