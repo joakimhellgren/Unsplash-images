@@ -1,13 +1,13 @@
 import UIKit
 
 
-class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDelegate {
+class SearchViewController : UIViewController, UISearchBarDelegate, UICollectionViewDelegate {
     
     
     // API
-    var dataManager = DataManager()
+    var dataManager = API()
     // parameters / trackers
-    var images: [Result] = []
+    var images: [Image] = []
     var totalCount = 0
     var currentCount = 0
     var page = 1
@@ -15,9 +15,9 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     
     //MARK: - API methods & config
-    func update(with items: [Result]) {
+    func update(with items: [Image]) {
         // compare new data with any existing data in diffable data source and update any changes.
-        var snapshot = NSDiffableDataSourceSnapshot<Int, Result>()
+        var snapshot = NSDiffableDataSourceSnapshot<Int, Image>()
         snapshot.appendSections([0])
         snapshot.appendItems(images, toSection: 0)
         diffableDataSource.apply(snapshot, animatingDifferences: true)
@@ -74,10 +74,10 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     
     // MARK: - DiffableDataSource configuration
-    private lazy var diffableDataSource: UICollectionViewDiffableDataSource<Int, Result> = {
+    private lazy var diffableDataSource: UICollectionViewDiffableDataSource<Int, Image> = {
         // cell config
-        let dataSource = UICollectionViewDiffableDataSource<Int, Result>(collectionView: collectionView) { collectionView, indexPath, item in
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CollectionViewCell.identifier, for: indexPath) as! CollectionViewCell
+        let dataSource = UICollectionViewDiffableDataSource<Int, Image>(collectionView: collectionView) { collectionView, indexPath, item in
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchCollectionViewCell.identifier, for: indexPath) as! SearchCollectionViewCell
             cell.configure(label: self.images[indexPath.row].user.username, image: self.images[indexPath.row].urls.small)
             return cell
         }
@@ -86,7 +86,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         dataSource.supplementaryViewProvider = { collectionView, kind, indexPath -> UICollectionReusableView? in
             switch kind {
             case UICollectionView.elementKindSectionFooter:
-                guard let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "sampleFooterIdentifier", for: indexPath) as? CollectionReusableView
+                guard let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "sampleFooterIdentifier", for: indexPath) as? SearchCollectionReusableView
                 else {
                     print("error implementing footerView")
                     return UICollectionReusableView()
@@ -138,9 +138,9 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
         let layout = UICollectionViewCompositionalLayout(section: section)
         let collectionView = UICollectionView(frame: .zero,
                                               collectionViewLayout: layout)
-        collectionView.register(CollectionViewCell.self,
-                                forCellWithReuseIdentifier: CollectionViewCell.identifier)
-        collectionView.register(CollectionReusableView.self,
+        collectionView.register(SearchCollectionViewCell.self,
+                                forCellWithReuseIdentifier: SearchCollectionViewCell.identifier)
+        collectionView.register(SearchCollectionReusableView.self,
                                 forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter,
                                 withReuseIdentifier: "sampleFooterIdentifier")
         return collectionView
@@ -170,7 +170,7 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     //MARK: - Search bar configuration
     var searchController = UISearchController()
 
-    // purge any existing data when performing a new search
+    // purge any existing data in the diff data source when performing a new search
     func purgeData() {
         images = []
         currentCount = 0
@@ -210,7 +210,6 @@ class ViewController : UIViewController, UISearchBarDelegate, UICollectionViewDe
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
     }
 }
 

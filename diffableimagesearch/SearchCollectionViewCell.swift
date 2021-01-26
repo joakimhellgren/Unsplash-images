@@ -7,7 +7,7 @@
 
 import UIKit
 
-class CollectionViewCell: UICollectionViewCell {
+class SearchCollectionViewCell: UICollectionViewCell {
     
     static let identifier = "cell"
     private var myLabel: UILabel = {

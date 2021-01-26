@@ -7,7 +7,7 @@
 
 import Foundation
 
-class DataManager {
+class API {
     let apiURL = "https://api.unsplash.com/search/photos?client_id=aCjNILUQzy5m2pMEiE1Ax9U4-_T9o6KPvKORnwfOxPQ"
     func fetch(page: Int, searchTerm: String, callback: @escaping (Images) -> ()) {
         let urlString = "\(apiURL)&query=\(searchTerm)&page=\(page)"

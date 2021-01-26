@@ -10,10 +10,10 @@ import Foundation
 struct Images: Decodable {
     let total: Int
     let total_pages: Int
-    let results: [Result]
+    let results: [Image]
 }
 
-struct Result: Decodable, Hashable {
+struct Image: Decodable, Hashable {
     let id: String
     let created_at: String
     let description: String?

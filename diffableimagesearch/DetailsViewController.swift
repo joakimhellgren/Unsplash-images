@@ -92,9 +92,9 @@ class DetailsViewController: UIViewController {
         }
     }
     
-    var currentImageData: Result?
+    var currentImageData: Image?
     
-    public func configure(data: Result) {
+    public func configure(data: Image) {
         formatDate(date: data.created_at)
         activityIndicator.startAnimating()
         title = data.user.username

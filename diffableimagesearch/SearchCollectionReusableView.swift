@@ -7,7 +7,7 @@
 
 import UIKit
 
-class CollectionReusableView: UICollectionReusableView {
+class SearchCollectionReusableView: UICollectionReusableView {
     
     private var titleLabel = UILabel()
     private var activityIndicator = UIActivityIndicatorView()
