@@ -46,13 +46,6 @@ class FavoritesCollectionViewCell: UICollectionViewCell {
     }
     
     required init?(coder aDecoder: NSCoder) {
-        if let label = aDecoder.decodeObject() as? UILabel,
-           let img = aDecoder.decodeObject() as? CustomImageView {
-            self.myLabel = label
-            self.myImageView = img
-        } else {
-            return nil
-        }
         super.init(coder: aDecoder)
     }
     
