@@ -98,6 +98,7 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
     
     func showPopup(with title: String, message: String, on viewController: HomeViewController) {
         popupBackgroundView.frame = view.bounds
+        popupBackgroundView.backgroundColor = UIColor.secondarySystemBackground
         view.addSubview(popupBackgroundView)
         
         let popupViewSize = popupBackgroundView.frame.size.width - (popupBackgroundView.frame.size.width / 7.125)
@@ -106,7 +107,7 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
                                  width: popupViewSize,
                                  height: popupViewSize + 128)
         popupView.center = CGPoint(x: view.center.x,
-                                   y: view.center.y - (view.center.y / 2.5))
+                                   y: view.center.y - (view.center.y / 4.5))
         view.addSubview(popupView)
         let titleLabel = UILabel(frame: CGRect(x: 16,
                                                y: 0,
@@ -125,6 +126,7 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         messageLabel.text = message
         messageLabel.textAlignment = .center
         popupView.addSubview(messageLabel)
+        
         let emailField: UITextField = {
             let emailField = UITextField()
             emailField.frame = CGRect(x: 16,

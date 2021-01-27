@@ -19,7 +19,7 @@
 		1431059825739A5A0054CA72 /* SearchCollectionReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1431059725739A5A0054CA72 /* SearchCollectionReusableView.swift */; };
 		1431059B2573A7F40054CA72 /* CustomImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1431059A2573A7F40054CA72 /* CustomImageView.swift */; };
 		143105A02574D4B70054CA72 /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1431059F2574D4B70054CA72 /* API.swift */; };
-		143B7DF325B98D1D00CE5BCA /* FavoritesCoreDataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 143B7DF125B98D1D00CE5BCA /* FavoritesCoreDataModel.xcdatamodeld */; };
+		143B7DF325B98D1D00CE5BCA /* CoreDataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 143B7DF125B98D1D00CE5BCA /* CoreDataModel.xcdatamodeld */; };
 		1456CD5F2575274E008441DC /* DetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1456CD5E2575274E008441DC /* DetailsViewController.swift */; };
 		14AB5A5E25B6F5FE00795555 /* FavoritesCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14AB5A5D25B6F5FE00795555 /* FavoritesCollectionViewCell.swift */; };
 /* End PBXBuildFile section */
@@ -78,7 +78,7 @@
 				1431057B256FE6FE0054CA72 /* SceneDelegate.swift */,
 				1431057D256FE6FE0054CA72 /* SearchViewController.swift */,
 				1456CD5E2575274E008441DC /* DetailsViewController.swift */,
-				143B7DF125B98D1D00CE5BCA /* FavoritesCoreDataModel.xcdatamodeld */,
+				143B7DF125B98D1D00CE5BCA /* CoreDataModel.xcdatamodeld */,
 				1431059F2574D4B70054CA72 /* API.swift */,
 				1431059A2573A7F40054CA72 /* CustomImageView.swift */,
 				1431059725739A5A0054CA72 /* SearchCollectionReusableView.swift */,
@@ -167,7 +167,7 @@
 				1431059825739A5A0054CA72 /* SearchCollectionReusableView.swift in Sources */,
 				143105A02574D4B70054CA72 /* API.swift in Sources */,
 				14AB5A5E25B6F5FE00795555 /* FavoritesCollectionViewCell.swift in Sources */,
-				143B7DF325B98D1D00CE5BCA /* FavoritesCoreDataModel.xcdatamodeld in Sources */,
+				143B7DF325B98D1D00CE5BCA /* CoreDataModel.xcdatamodeld in Sources */,
 				1456CD5F2575274E008441DC /* DetailsViewController.swift in Sources */,
 				1431057E256FE6FE0054CA72 /* SearchViewController.swift in Sources */,
 				143105952572A1190054CA72 /* SearchCollectionViewCell.swift in Sources */,
@@ -381,13 +381,13 @@
 /* End XCConfigurationList section */
 
 /* Begin XCVersionGroup section */
-		143B7DF125B98D1D00CE5BCA /* FavoritesCoreDataModel.xcdatamodeld */ = {
+		143B7DF125B98D1D00CE5BCA /* CoreDataModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
 				143B7DF225B98D1D00CE5BCA /* CoreDataModel.xcdatamodel */,
 			);
 			currentVersion = 143B7DF225B98D1D00CE5BCA /* CoreDataModel.xcdatamodel */;
-			path = FavoritesCoreDataModel.xcdatamodeld;
+			path = CoreDataModel.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};

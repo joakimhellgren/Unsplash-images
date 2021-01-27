@@ -75,11 +75,12 @@ class DetailsViewController: UIViewController {
         detailsViewController.addSubview(dateLabel)
         detailsViewController.addSubview(myImageView)
         detailsViewController.addSubview(descriptionLabel)
+        let tap = UITapGestureRecognizer(target: self, action: #selector(doubleTapped))
+            tap.numberOfTapsRequired = 2
+            view.addGestureRecognizer(tap)
     }
     
 
-    
-    
     func formatDate(date: String) {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
@@ -105,10 +106,8 @@ class DetailsViewController: UIViewController {
             descriptionLabel.text = "\"" + "no description found" + "\""
         }
         currentImageData = data
-        let tap = UITapGestureRecognizer(target: self, action: #selector(doubleTapped))
-            tap.numberOfTapsRequired = 2
-            view.addGestureRecognizer(tap)
     }
+    
     
     @objc func doubleTapped() {
         guard let data = currentImageData else { return }
